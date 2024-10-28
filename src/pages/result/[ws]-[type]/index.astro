@@ -1,0 +1,292 @@
+---
+import Table from "@/components/data-table";
+import {
+  createTemporaryDirectory,
+  digital_reconstruction_result,
+  network_simulation_result,
+  ensureArray,
+  experimental_data_result,
+  fetch_resource,
+  writeFileToDirectory,
+} from "@/api/nexus";
+import Layout from "@/layouts/result-layout.astro";
+import { getPageMapping } from "@/lib/shared";
+
+export async function getStaticPaths() {
+  const pages: Array<{
+    ws: string;
+    type: string;
+    columns: Array<{
+      id: string;
+      key: string;
+      name: string;
+      enableSorting: boolean;
+      enableHiding: boolean;
+    }>;
+    rows: any[];
+  }> = [];
+  const [
+    morphology,
+    electrophysiology,
+    layer_anatomy,
+    neuron_density,
+    bouton_density,
+  ] = experimental_data_result;
+  const experimental_data = {
+    morphology,
+    electrophysiology,
+    layer_anatomy,
+    neuron_density,
+    bouton_density,
+  };
+
+  const [
+    single_cell_model,
+    neuron_morphology,
+    neuron_electrophysiology,
+    fact_sheet,
+    microcircuit_reconstruction,
+  ] = digital_reconstruction_result;
+  const digital_reconstruction = {
+    single_cell_model,
+    neuron_morphology,
+    neuron_electrophysiology,
+    fact_sheet,
+    microcircuit_reconstruction,
+  };
+  const [
+    evoked_sensory_activity_in_vivo_like_condition,
+    sensory_adaptation_control_vs_cortical_input_in_vivo_like_condition,
+    transition_from_wakefulness_like_states_to_simulated_cortical,
+    spindle_like_oscillations_in_vitro_like_condition,
+    spindle_like_oscillations_control_vs_gap_junctions_removed,
+  ] = network_simulation_result;
+  const network_simulation = {
+    evoked_sensory_activity_in_vivo_like_condition,
+    sensory_adaptation_control_vs_cortical_input_in_vivo_like_condition,
+    transition_from_wakefulness_like_states_to_simulated_cortical,
+    spindle_like_oscillations_in_vitro_like_condition,
+    spindle_like_oscillations_control_vs_gap_junctions_removed,
+  };
+
+  // const path = await createTemporaryDirectory("artifacts");
+  for (const k of Object.keys(experimental_data)) {
+    const final_data = [];
+    const dash = experimental_data[k as keyof typeof experimental_data];
+    const columns = dash["head"]["vars"];
+    try {
+      const results = dash["results"]["bindings"].map((o: any) => {
+        return Object.entries(o)
+          .map(([key, val]) => ({
+            [key]: (val as unknown as any).value,
+          }))
+          .reduce((acc, cur) => ({ ...acc, ...cur }));
+      });
+      for (const res of results) {
+        const resource = await fetch_resource(res.self);
+        // if ("distribution" in resource) {
+        //   const artifacts = [];
+        //   for (const dist of ensureArray(resource.distribution)) {
+        //     const binary = await fetch_resource(dist.contentUrl, "blob");
+        //     const name = dist["name"];
+        //     const self = resource["_self"];
+        //     const type = dist["encodingFormat"];
+        //     const size = dist["contentSize"]["value"];
+        //     const url = dist.contentUrl;
+        //     await writeFileToDirectory(`${path}/${name}`, Buffer.from(binary));
+        //     artifacts.push({
+        //       name,
+        //       self,
+        //       type,
+        //       size,
+        //       url,
+        //       path: `${path}/${name}`,
+        //     });
+        //   }
+        //   final_data.push({
+        //     ...res,
+        //     name: resource.name,
+        //     resource,
+        //     artifacts,
+        //   });
+        // } else {
+        // }
+        final_data.push({
+          ...res,
+          resource,
+          binaries: null,
+        });
+      }
+
+      pages.push({
+        columns: columns
+          .filter((col: string) => !["self", "resource"].includes(col))
+          .map((col: string) => ({
+            id: col,
+            key: col,
+            name: col,
+            enableSorting: true,
+            enableHiding: true,
+          })),
+        rows: final_data,
+        ws: "exp_data",
+        type: k,
+      });
+    } catch (error) {
+      console.error("@@error", error);
+    }
+  }
+
+  for (const k of Object.keys(digital_reconstruction)) {
+    const final_data = [];
+    const dash =
+      digital_reconstruction[k as keyof typeof digital_reconstruction];
+    const columns = dash["head"]["vars"];
+    try {
+      const results = dash["results"]["bindings"].map((o: any) => {
+        return Object.entries(o)
+          .map(([key, val]) => ({
+            [key]: (val as unknown as any).value,
+          }))
+          .reduce((acc, cur) => ({ ...acc, ...cur }));
+      });
+      for (const res of results) {
+        const resource = await fetch_resource(res.self);
+        // if ("distribution" in resource) {
+        //   const artifacts = [];
+        //   for (const dist of ensureArray(resource.distribution)) {
+        //     const binary = await fetch_resource(dist.contentUrl, "blob");
+        //     const name = dist["name"];
+        //     const self = resource["_self"];
+        //     const type = dist["encodingFormat"];
+        //     const size = dist["contentSize"]["value"];
+        //     const url = dist.contentUrl;
+        //     await writeFileToDirectory(`${path}/${name}`, Buffer.from(binary));
+        //     artifacts.push({
+        //       name,
+        //       self,
+        //       type,
+        //       size,
+        //       url,
+        //       path: `${path}/${name}`,
+        //     });
+        //   }
+        //   final_data.push({
+        //     ...res,
+        //     name: resource.name,
+        //     resource,
+        //     artifacts,
+        //   });
+        // } else {
+        // }
+        final_data.push({
+          ...res,
+          resource,
+          binaries: null,
+        });
+      }
+
+      pages.push({
+        columns: columns
+          .filter((col: string) => !["self", "resource"].includes(col))
+          .map((col: string) => ({
+            id: col,
+            key: col,
+            name: col,
+            enableSorting: true,
+            enableHiding: true,
+          })),
+        rows: final_data,
+        ws: "dig_recons",
+        type: k,
+      });
+    } catch (error) {
+      console.error("@@error", error);
+    }
+  }
+
+  for (const k of Object.keys(network_simulation)) {
+    const final_data = [];
+    const dash = network_simulation[k as keyof typeof network_simulation];
+    const columns = dash["head"]["vars"];
+    try {
+      const results = dash["results"]["bindings"].map((o: any) => {
+        return Object.entries(o)
+          .map(([key, val]) => ({
+            [key]: (val as unknown as any).value,
+          }))
+          .reduce((acc, cur) => ({ ...acc, ...cur }));
+      });
+      for (const res of results) {
+        const resource = await fetch_resource(res.self);
+        // if ("distribution" in resource) {
+        //   const artifacts = [];
+        //   for (const dist of ensureArray(resource.distribution)) {
+        //     const binary = await fetch_resource(dist.contentUrl, "blob");
+        //     const name = dist["name"];
+        //     const self = resource["_self"];
+        //     const type = dist["encodingFormat"];
+        //     const size = dist["contentSize"]["value"];
+        //     const url = dist.contentUrl;
+        //     await writeFileToDirectory(`${path}/${name}`, Buffer.from(binary));
+        //     artifacts.push({
+        //       name,
+        //       self,
+        //       type,
+        //       size,
+        //       url,
+        //       path: `${path}/${name}`,
+        //     });
+        //   }
+        //   final_data.push({
+        //     ...res,
+        //     name: resource.name,
+        //     resource,
+        //     artifacts,
+        //   });
+        // } else {
+        // }
+        final_data.push({
+          ...res,
+          resource,
+          binaries: null,
+        });
+      }
+
+      pages.push({
+        columns: columns
+          .filter((col: string) => !["self", "resource"].includes(col))
+          .map((col: string) => ({
+            id: col,
+            key: col,
+            name: col,
+            enableSorting: true,
+            enableHiding: true,
+          })),
+        rows: final_data,
+        ws: "network_sim",
+        type: k,
+      });
+    } catch (error) {
+      console.error("@@error", error);
+    }
+  }
+
+  const all = pages.map(({ ws, type, columns, rows }) => ({
+    params: { ws, type },
+    props: { rows, columns },
+  }));
+  return all;
+}
+
+const { ws, type } = Astro.params;
+const { columns, rows } = Astro.props;
+
+const tile = getPageMapping(ws, type);
+---
+
+<Layout title={tile}>
+  <div class="m-10">
+    <Table data={rows} columns={columns} isSelectable={false} client:load />
+  </div>
+</Layout>
