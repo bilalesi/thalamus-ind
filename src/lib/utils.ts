@@ -53,6 +53,6 @@ export function getField(resource: Resource, field: any) {
 
 export function bytesToMB(bytes: number) {
   const MB = 1024 * 1024;  // 1 MB = 1024 * 1024 bytes
-  return (bytes / MB).toFixed(2);  // Convert to MB and round to 2 decimal places
+  return (bytes / MB).toFixed(4);  // Convert to MB and round to 2 decimal places
 }
 

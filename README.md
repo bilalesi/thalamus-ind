@@ -29,11 +29,3 @@ this file will generate all the static files based on the config that you provid
 
 the file will go through all the db tables from `api/db.ts` (schema from the creed app)
 and fetch the `columns/data` and return all dashboard as independent pages
-
-## NOTE
-
-This script saves data to an SQLite database, which can then be uploaded to an S3 bucket. It is primarily used when regenerating static pages due to changes in the data or design updates.
-
-## NOTE
-
-docker image is ready for deployment (works perfectly)

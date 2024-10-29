@@ -36,9 +36,15 @@ export default function Artifacts({ self, artifacts }: { self: string; artifacts
                             <TableCell>{bytesToMB(distr.size)} mb</TableCell>
                             <TableCell className="text-right">
                                 <Button variant="outline" size="icon">
-                                    <a download={distr.name} href={distr.path} >
-                                        <DownloadIcon className="h-4 w-4" />
-                                    </a>
+                                    {distr.downloadable ? (
+                                        <a download={distr.name} href={distr.path} >
+                                            <DownloadIcon className="h-4 w-4" />
+                                        </a>
+                                    ) : (
+                                        <a target="_blank" rel="noopener noreferrer" href={distr.path} >
+                                            <DownloadIcon className="h-4 w-4" />
+                                        </a>
+                                    )}
                                 </Button>
                             </TableCell>
                         </TableRow>

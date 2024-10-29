@@ -46,7 +46,7 @@ export const pagesMapping = {
     "dig_recons-single_cell_model": "Digital Reconstruction - Single Cell Model",
 }
 
-export const getPageMapping = (ws: string, type: string) => pagesMapping[`${ws}-${type}` as keyof typeof pagesMapping];
+export const getPageTitleMapping = (ws: string, type: string) => pagesMapping[`${ws}-${type}` as keyof typeof pagesMapping];
 
 export type Distribution = {
     contentUrl: string
@@ -62,6 +62,7 @@ export type Artifact = {
     size: number;
     type: string;
     url: string;
+    downloadable: boolean;
 }
 
 export type Resource = {

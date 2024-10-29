@@ -15,6 +15,8 @@ import type { Artifact, Resource } from '@/lib/shared';
 import Preview from './preview';
 import Metadata from './metadata';
 import Artifacts from './artifacts';
+import get from 'lodash/get';
+import Video from './video';
 
 
 
@@ -39,7 +41,7 @@ export function ResourceViewer(
                     style={{ '--initial-transform': 'calc(100% + 8px)' } as React.CSSProperties}
                 >
                     <div className="bg-zinc-50 h-full w-full grow p-5 flex flex-col rounded-[2px]  overflow-scroll">
-                        <Drawer.Title className="py-4 pb-0 mb-4 font-bold text-xl text-blue-800 grid grid-cols-[1fr_50px] items-center justify-between gap-4">
+                        <Drawer.Title className="py-4 pb-0 mb-4 font-bold text-xl text-blue-800 grid grid-cols-[1fr_25px] items-center justify-between gap-4">
                             <h1 className='line-clamp-2'>{resource?.["name"]}</h1>
                             <XIcon onClick={onClose} className='cursor-pointer' color='gray' />
                         </Drawer.Title>
@@ -61,6 +63,13 @@ export function ResourceViewer(
                                         <Metadata resource={resource} />
                                     </AccordionContent>
                                 </AccordionItem>
+                                {get(resource, "video.embedUrl") &&
+                                    <AccordionItem value="Preview" className='border-none'>
+                                        <AccordionTrigger className='border border-gray-100 px-4 py-3 rounded-md mb-3 bg-blue-100 hover:bg-blue-800 hover:text-white hover:no-underline'>Preview</AccordionTrigger>
+                                        <AccordionContent className='px-4 flex items-center justify-center'>
+                                            <Video link={get(resource, "video.embedUrl", "")} />
+                                        </AccordionContent>
+                                    </AccordionItem>}
                                 <AccordionItem value="resource" className='border-none'>
                                     <AccordionTrigger className='border border-gray-100 px-4 py-3 rounded-md mb-3 bg-blue-100 hover:bg-blue-800 hover:text-white hover:no-underline'>Resource</AccordionTrigger>
                                     <AccordionContent className='px-4 mb-0'>

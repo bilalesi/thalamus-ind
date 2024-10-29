@@ -56,8 +56,12 @@ export function BreadcrumbWithDropdown() {
 
     useEffect(() => {
         const url = new URL(window.location.href);
-        const ws = url.pathname.split("/").pop()?.split('-').at(0) as Workspace;
-        const dash = url.pathname.split("/").pop()?.split('-').at(1) as Dashboard;
+        let pathname = url.pathname;
+        if (url.pathname.endsWith('/')) {
+            pathname = url.pathname.slice(0, -1);
+        }
+        const ws = pathname.split("/").pop()?.split('-').at(0) as Workspace;
+        const dash = pathname.split("/").pop()?.split('-').at(1) as Dashboard;
         if (ws && dash) setLocation({ ws, dash });
     }, []);
 

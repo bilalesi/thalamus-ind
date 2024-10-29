@@ -133,3 +133,4 @@ creed/thalamus.sqlite
 .DS_Store
 node_modules
 .astro
+public/artifacts
