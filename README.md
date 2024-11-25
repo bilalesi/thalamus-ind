@@ -27,7 +27,7 @@ npm run build (to check the output of the build as pages size ...)
 
 this file will generate all the static files based on the config that you provided
 
-> **NOTE**: get the studio workspaces/dashboard spark-ql queries and create the relative object mapping in 
+> **NOTE**: get the studio workspaces/dashboard spark-ql queries and create the relative object mapping in `/api/nexus`
 
 the file will use the `/api/nexus`  and fetch the `columns/data` and return all dashboard as independent pages
 
