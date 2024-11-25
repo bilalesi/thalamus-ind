@@ -27,6 +27,8 @@ npm run build (to check the output of the build as pages size ...)
 
 this file will generate all the static files based on the config that you provided
 
+> **NOTE**: get the studio workspaces/dashboard spark-ql queries and create the relative object mapping in 
+
 the file will use the `/api/nexus`  and fetch the `columns/data` and return all dashboard as independent pages
 
 > **NOTE**: do not forget to change the names of the workspaces/dashboards in the 
@@ -35,4 +37,4 @@ the file will use the `/api/nexus`  and fetch the `columns/data` and return all 
 > - `web/src/lib/shared.ts`
 > - `api/nexus`
 >
-> **NOTE**: update the entry point to the "portal results" in the header
+> **NOTE**: update the entry point to the "portal results" in the header components
