@@ -12,7 +12,8 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { digitalReconstructionList, experimentalDataList, type DigitalReconstructionListKeys, type ExperimentalDataListKeys } from "../../lib/shared";
+import { type DataDashboardsListKeys } from "../../lib/shared";
+import { data} from "../../lib/shared";
 
 export function Workspaces() {
     return (
@@ -23,24 +24,11 @@ export function Workspaces() {
             <DropdownMenuContent side="bottom" align="start" className="w-56">
                 <DropdownMenuGroup>
                     <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>Experimental data</DropdownMenuSubTrigger>
+                        <DropdownMenuSubTrigger>Data</DropdownMenuSubTrigger>
                         <DropdownMenuPortal>
                             <DropdownMenuSubContent>
-                                {Object.keys(experimentalDataList).map(i => (
-                                    <DropdownMenuItem textValue={i} key={i}>{experimentalDataList[i as ExperimentalDataListKeys]}</DropdownMenuItem>
-                                ))}
-                            </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>Digital reconstruction</DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                            <DropdownMenuSubContent>
-                                {Object.keys(digitalReconstructionList).map(i => (
-                                    <DropdownMenuItem textValue={i} key={i}>{digitalReconstructionList[i as DigitalReconstructionListKeys]}</DropdownMenuItem>
+                                {Object.keys(data).map(i => (
+                                    <DropdownMenuItem textValue={i} key={i}>{data[i as DataDashboardsListKeys]}</DropdownMenuItem>
                                 ))}
                             </DropdownMenuSubContent>
                         </DropdownMenuPortal>

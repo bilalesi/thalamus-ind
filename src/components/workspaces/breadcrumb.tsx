@@ -24,8 +24,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { digitalReconstructionList, experimentalDataList, networkSimulationList, workspacesList } from "../../lib/shared";
-import type { DigitalReconstructionListKeys, ExperimentalDataListKeys, NetworkSimulationListKeys } from "../../lib/shared";
+import { data, workspacesList } from "../../lib/shared";
+import type { DataDashboardsListKeys } from "../../lib/shared";
 import { useEffect, useState } from "react";
 
 type Location = {
@@ -33,14 +33,12 @@ type Location = {
     dash: Dashboard;
 } | null;
 
-type Workspace = "experimental_data" | "digital_reconstruction" | "network_simulation";
-type Dashboard = ExperimentalDataListKeys | DigitalReconstructionListKeys | NetworkSimulationListKeys;
+type Workspace = "data";
+type Dashboard = DataDashboardsListKeys;
 
 const getWorkspace = (value?: Workspace) => value && workspacesList[value];
 const getDashboard = ({ ws, value }: { ws: Workspace, value: Dashboard }) => {
-    if (ws === "experimental_data") return experimentalDataList[value as ExperimentalDataListKeys];
-    else if (ws === "digital_reconstruction") return digitalReconstructionList[value as DigitalReconstructionListKeys];
-    else if (ws === "network_simulation") return networkSimulationList[value as NetworkSimulationListKeys];
+    if (ws === "data") return data[value as DataDashboardsListKeys];
     else null;
 }
 
@@ -82,68 +80,26 @@ export function BreadcrumbWithDropdown() {
                             <Button variant="outline">{location?.ws ? getWorkspace(location?.ws) : "Workspaces"}</Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent side="bottom" align="start" className="w-56">
-                            <DropdownMenuGroup>
+                            {Object.keys(data).map(i => (
+                                <DropdownMenuItem
+                                    key={i}
+                                    textValue={i}
+                                    onSelect={() => {
+                                        onLocationChange({ ws: "data", dash: i as DataDashboardsListKeys })
+                                    }}
+                                >
+                                    {data[i as DataDashboardsListKeys]}
+                                </DropdownMenuItem>
+                            ))}
+                            {/* <DropdownMenuGroup>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>Experimental data</DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger>Data</DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
-                                            {Object.keys(experimentalDataList).map(i => (
-                                                <DropdownMenuItem
-                                                    key={i}
-                                                    textValue={i}
-                                                    onSelect={() => {
-                                                        onLocationChange({ ws: "experimental_data", dash: i as ExperimentalDataListKeys })
-                                                    }}
-                                                >
-                                                    {experimentalDataList[i as ExperimentalDataListKeys]}
-                                                </DropdownMenuItem>
-                                            ))}
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>Digital reconstruction</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                            {Object.keys(digitalReconstructionList).map((i) => (
-                                                <DropdownMenuItem
-                                                    onSelect={() => {
-                                                        onLocationChange({ ws: "digital_reconstruction", dash: i as DigitalReconstructionListKeys })
-                                                    }}
-                                                    key={i}
-                                                    textValue={i}
-                                                >
-                                                    {digitalReconstructionList[i as DigitalReconstructionListKeys]}
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>Network simulation</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                            {Object.keys(networkSimulationList).map((i) => (
-                                                <DropdownMenuItem
-                                                    onSelect={() => {
-                                                        onLocationChange({ ws: "network_simulation", dash: i as NetworkSimulationListKeys })
-                                                    }}
-                                                    key={i}
-                                                    textValue={i}
-                                                >
-                                                    {networkSimulationList[i as NetworkSimulationListKeys]}
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                            </DropdownMenuGroup>
+                            </DropdownMenuGroup> */}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </BreadcrumbItem>
