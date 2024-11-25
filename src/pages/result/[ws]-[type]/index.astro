@@ -67,13 +67,26 @@ export async function getStaticPaths() {
     spindle_like_oscillations_in_vitro_like_condition,
     spindle_like_oscillations_control_vs_gap_junctions_removed,
   };
+  const _path = `${process.cwd()}/public/artifacts`;
+  const path = await createTemporaryDirectory(_path);
+  const resource_folder = `${process.cwd()}/public/resources`;
 
-  const path = await createTemporaryDirectory("artifacts");
   for (const k of Object.keys(experimental_data)) {
     const final_data: any[] = [];
+    const res_path = await createTemporaryDirectory(
+      `${resource_folder}/experimental_data/${k}`
+    );
     const dash = experimental_data[k as keyof typeof experimental_data];
     try {
-      await processPageType(dash, path, final_data, pages, k, "exp_data");
+      await processPageType(
+        dash,
+        path,
+        res_path,
+        final_data,
+        pages,
+        k,
+        "experimental_data"
+      );
     } catch (error) {
       console.error("[error][experimental_data]", error);
     }
@@ -81,10 +94,22 @@ export async function getStaticPaths() {
 
   for (const k of Object.keys(digital_reconstruction)) {
     const final_data: any[] = [];
+    const res_path = await createTemporaryDirectory(
+      `${resource_folder}/digital_reconstruction/${k}`
+    );
+
     const dash =
       digital_reconstruction[k as keyof typeof digital_reconstruction];
     try {
-      await processPageType(dash, path, final_data, pages, k, "dig_recons");
+      await processPageType(
+        dash,
+        path,
+        res_path,
+        final_data,
+        pages,
+        k,
+        "digital_reconstruction"
+      );
     } catch (error) {
       console.error("[error][digital_reconstruction]", error);
     }
@@ -92,9 +117,21 @@ export async function getStaticPaths() {
 
   for (const k of Object.keys(network_simulation)) {
     const final_data: any[] = [];
+    const res_path = await createTemporaryDirectory(
+      `${resource_folder}/network_simulation/${k}`
+    );
+
     const dash = network_simulation[k as keyof typeof network_simulation];
     try {
-      await processPageType(dash, path, final_data, pages, k, "network_sim");
+      await processPageType(
+        dash,
+        path,
+        res_path,
+        final_data,
+        pages,
+        k,
+        "network_simulation"
+      );
     } catch (error) {
       console.error("[error][network_simulation]", error);
     }

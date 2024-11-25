@@ -1,5 +1,5 @@
-// const url = "https://bbp.epfl.ch/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
-const url = "https://openbluebrain.com/api/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
+// const url = "https://openbluebrain.com/api/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
 
 const token = "Bearer xxx";
 
@@ -631,15 +631,13 @@ import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-export const createTemporaryDirectory = async (name: string) => {
-    const _path = `${process.cwd()}/public/${name}`;
+export const createTemporaryDirectory = async (_path: string) => {
     try {
         if (!existsSync(_path)) {
             const final_path = await mkdir(_path, { recursive: true });
-            console.log('@@_path', final_path)
-            return final_path;
+            return _path;
         } else {
-            console.log(`Directory '${name}' already exists.`);
+            console.log(`Directory '${_path}' already exists.`);
             return _path;
         }
     } catch (error) {
@@ -667,89 +665,98 @@ export const writeFileToDirectory = async (name: string, blob: Buffer) => {
 export async function processPageType(
     dash: any,
     path: string | undefined,
+    res_path: string | undefined,
     final_data: any[],
     pages: {
-      ws: string;
-      type: string;
-      columns: Array<{
-        id: string;
-        key: string;
-        name: string;
-        enableSorting: boolean;
-        enableHiding: boolean;
-      }>;
-      rows: any[];
+        ws: string;
+        type: string;
+        columns: Array<{
+            id: string;
+            key: string;
+            name: string;
+            enableSorting: boolean;
+            enableHiding: boolean;
+        }>;
+        rows: any[];
     }[],
     k: string,
     ws: string,
-  ) {
+) {
     const columns = dash["head"]["vars"];
     try {
-      const results = dash["results"]["bindings"].map((o: any) => {
-        return Object.entries(o)
-          .map(([key, val]) => ({
-            [key]: (val as unknown as any).value,
-          }))
-          .reduce((acc, cur) => ({ ...acc, ...cur }));
-      });
-      for (const res of results) {
-        const resource = await fetch_resource(res.self);
-        if ("distribution" in resource) {
-          const artifacts = [];
-          for (const dist of ensureArray(resource.distribution)) {
-            const name = dist["name"];
-            const self = resource["_self"];
-            const type = dist["encodingFormat"];
-            const size = dist["contentSize"]["value"];
-            const url = dist.contentUrl;
-            if (!existsSync(`${path}/${name}`) && dist.contentUrl) {
-              const binary = await fetch_resource(dist.contentUrl, "blob");
-              await writeFile(`${path}/${name}`, Buffer.from(binary), {
-                flag: "wx",
-              });
-            } else {
-            //   console.log("@@file-exist", name);
+        const results = dash["results"]["bindings"].map((o: any) => {
+            return Object.entries(o)
+                .map(([key, val]) => ({
+                    [key]: (val as unknown as any).value,
+                }))
+                .reduce((acc, cur) => ({ ...acc, ...cur }));
+        });
+        for (const res of results) {
+            const resource = await fetch_resource(res.self);
+            const resouce_name = resource.name;
+            // NOTE: need to check the resource response differernt to error context
+            // resource['@context'] === 'https://bluebrain.github.io/nexus/contexts/error.json'
+            if (!existsSync(`${res_path}/${resource.name}.json`) && resouce_name) {
+                await writeFile(`${res_path}/${resource.name}.json`, Buffer.from(JSON.stringify(resource)), {
+                    flag: "wx",
+                });
             }
-            artifacts.push({
-              name,
-              self,
-              type,
-              size,
-              url,
-              path: dist.url ? dist.url : `/artifacts/${name}`,
-              downloadable: !Boolean(dist.url)
-            });
-          }
-          final_data.push({
-            ...res,
-            name: resource.name,
-            resource,
-            artifacts,
-          });
-        } else {
-          final_data.push({
-            ...res,
-            resource,
-            artifacts: null,
-          });
+            if ("distribution" in resource) {
+                const artifacts = [];
+                for (const dist of ensureArray(resource.distribution)) {
+                    const name = dist["name"];
+                    const self = resource["_self"];
+                    const type = dist["encodingFormat"];
+                    const size = dist["contentSize"]["value"];
+                    const url = dist.contentUrl;
+                    if (!existsSync(`${path}/${name}`) && dist.contentUrl) {
+                        const binary = await fetch_resource(dist.contentUrl, "blob");
+                        await writeFile(`${path}/${name}`, Buffer.from(binary), {
+                            flag: "wx",
+                        });
+                    } else {
+                        //   console.log("@@file-exist", name);
+                    }
+                    artifacts.push({
+                        name,
+                        self,
+                        type,
+                        size,
+                        url,
+                        path: dist.url ? dist.url : `/artifacts/${name}`,
+                        downloadable: !Boolean(dist.url)
+                    });
+                }
+                final_data.push({
+                    ...res,
+                    name: resource.name,
+                    resource,
+                    artifacts,
+                });
+            } else {
+                final_data.push({
+                    ...res,
+                    resource,
+                    artifacts: null,
+                });
+            }
         }
-      }
-  
-      pages.push({
-        columns: columns
-          .filter((col: string) => !["self", "resource"].includes(col))
-          .map((col: string) => ({
-            id: col,
-            key: col,
-            name: col,
-            enableSorting: true,
-            enableHiding: true,
-          })),
-        rows: final_data,
-        ws: ws,
-        type: k,
-      });
+
+        pages.push({
+            columns: columns
+                .filter((col: string) => !["self", "resource"].includes(col))
+                .map((col: string) => ({
+                    id: col,
+                    key: col,
+                    name: col,
+                    enableSorting: true,
+                    enableHiding: true,
+                })),
+            rows: final_data,
+            ws: ws,
+            type: k,
+        });
     } catch (error) {
-      console.error("@@error", error);
+        console.error("@@error", error);
     }
-  }
+}

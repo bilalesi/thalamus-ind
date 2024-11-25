@@ -33,14 +33,14 @@ type Location = {
     dash: Dashboard;
 } | null;
 
-type Workspace = "exp_data" | "dig_recons" | "network_sim";
+type Workspace = "experimental_data" | "digital_reconstruction" | "network_simulation";
 type Dashboard = ExperimentalDataListKeys | DigitalReconstructionListKeys | NetworkSimulationListKeys;
 
 const getWorkspace = (value?: Workspace) => value && workspacesList[value];
 const getDashboard = ({ ws, value }: { ws: Workspace, value: Dashboard }) => {
-    if (ws === "exp_data") return experimentalDataList[value as ExperimentalDataListKeys];
-    else if (ws === "dig_recons") return digitalReconstructionList[value as DigitalReconstructionListKeys];
-    else if (ws === "network_sim") return networkSimulationList[value as NetworkSimulationListKeys];
+    if (ws === "experimental_data") return experimentalDataList[value as ExperimentalDataListKeys];
+    else if (ws === "digital_reconstruction") return digitalReconstructionList[value as DigitalReconstructionListKeys];
+    else if (ws === "network_simulation") return networkSimulationList[value as NetworkSimulationListKeys];
     else null;
 }
 
@@ -55,6 +55,7 @@ export function BreadcrumbWithDropdown() {
     }
 
     useEffect(() => {
+        // NOTE: this is done for the some static hosting provider that will add the trailing slash at the end
         const url = new URL(window.location.href);
         let pathname = url.pathname;
         if (url.pathname.endsWith('/')) {
@@ -91,7 +92,7 @@ export function BreadcrumbWithDropdown() {
                                                     key={i}
                                                     textValue={i}
                                                     onSelect={() => {
-                                                        onLocationChange({ ws: "exp_data", dash: i as ExperimentalDataListKeys })
+                                                        onLocationChange({ ws: "experimental_data", dash: i as ExperimentalDataListKeys })
                                                     }}
                                                 >
                                                     {experimentalDataList[i as ExperimentalDataListKeys]}
@@ -110,7 +111,7 @@ export function BreadcrumbWithDropdown() {
                                             {Object.keys(digitalReconstructionList).map((i) => (
                                                 <DropdownMenuItem
                                                     onSelect={() => {
-                                                        onLocationChange({ ws: "dig_recons", dash: i as DigitalReconstructionListKeys })
+                                                        onLocationChange({ ws: "digital_reconstruction", dash: i as DigitalReconstructionListKeys })
                                                     }}
                                                     key={i}
                                                     textValue={i}
@@ -131,7 +132,7 @@ export function BreadcrumbWithDropdown() {
                                             {Object.keys(networkSimulationList).map((i) => (
                                                 <DropdownMenuItem
                                                     onSelect={() => {
-                                                        onLocationChange({ ws: "network_sim", dash: i as NetworkSimulationListKeys })
+                                                        onLocationChange({ ws: "network_simulation", dash: i as NetworkSimulationListKeys })
                                                     }}
                                                     key={i}
                                                     textValue={i}
