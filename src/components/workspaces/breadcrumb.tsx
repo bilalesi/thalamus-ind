@@ -1,7 +1,7 @@
 
 "use client";
 
-import { SlashIcon } from "@radix-ui/react-icons"
+import { SlashIcon } from "@radix-ui/react-icons";
 
 import {
     Breadcrumb,
@@ -10,23 +10,17 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuPortal,
-    DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { data, workspacesList } from "../../lib/shared";
-import type { DataDashboardsListKeys } from "../../lib/shared";
 import { useEffect, useState } from "react";
+import type { DataDashboardsListKeys } from "../../lib/shared";
+import { data, workspacesList } from "../../lib/shared";
 
 type Location = {
     ws: Workspace;
@@ -91,15 +85,6 @@ export function BreadcrumbWithDropdown() {
                                     {data[i as DataDashboardsListKeys]}
                                 </DropdownMenuItem>
                             ))}
-                            {/* <DropdownMenuGroup>
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>Data</DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                            </DropdownMenuGroup> */}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </BreadcrumbItem>

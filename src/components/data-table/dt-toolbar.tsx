@@ -1,7 +1,7 @@
 "use client"
 
-import { Cross2Icon } from "@radix-ui/react-icons"
-import type { Table } from "@tanstack/react-table"
+import { Cross2Icon } from "@radix-ui/react-icons";
+import type { Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ export function DataTableToolbar<TData>({
     table,
 }: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0
-    const input = table.getColumn("name") ?? table.getColumn("input") ?? table.getColumn("analysisResult") 
+    const input = table.getColumn("name");
     return (
         <div className="flex items-center justify-between">
             <div className="flex flex-1 items-center space-x-2">

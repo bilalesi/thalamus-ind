@@ -1,134 +1,73 @@
-const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021.2SparqlIndex/sparql"
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/synthetic_axonal_morphologies/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2FdefaultSparqlIndex/sparql"
 // const url = "https://openbluebrain.com/api/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
 
 const token = "Bearer xxx";
 
-const data_dashboards = {
-    analysis_results: `
-    PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+const data = {
+    neuron_morphology: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX nsg: <https://neuroshapes.org/>
 PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?analysisResult ?analysisResultDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) 
-?codeVersion ?license 
-WHERE  {  
-  ?entity nxv:self ?self ;
-   nxv:deprecated false ;
-   a schema:Dataset ;
-   schema:name ?analysisResult ;
-   schema:description ?analysisResultDescription .
- ?entity nsg:derivation / prov:entity / schema:name ?derivation . 
- ?entity nsg:generation / prov:activity / prov:wasAssociatedWith ?softwareAgent .
- ?softwareAgent a prov:SoftwareAgent ;
-                 schema:name ?softwareName ;
-                 nsg:softwareSourceCode / schema:codeRepository ?codeRepository ;
-                 nsg:softwareSourceCode / schema:version ?codeVersion .
-  OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
-  OPTIONAL { ?agent schema:familyName ?familyName } . 
-  OPTIONAL { ?agent schema:givenName ?givenName } . 
-  OPTIONAL { ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?modelledBrainRegion } . 
-  OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?modelledSpecies } . 
-  OPTIONAL { ?entity schema:license ?license } .  
-  FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
-}
-LIMIT 100`,
-    configurations: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX schema: <http://schema.org/>
-PREFIX nsg: <https://neuroshapes.org/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#> 
 
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?name (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?softwareName ?codeVersion ?codeRepository ?runtimePlatform ?license
-WHERE {
-?entity nxv:self ?self_wo_tag ;
-   nxv:deprecated false ;
-   nxv:createdAt ?registeredAt ;
-   nxv:createdBy ?registered_by ;
-   nxv:updatedAt ?updatedAt ;
-   nxv:updatedBy ?updated_by ;
-   a nsg:Configuration ;
-   schema:name ?name ;
-  BIND (STR(?registered_by) AS ?registered_by_str) .
-  BIND (STR(?updated_by) AS ?updated_by_str) .
-OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
-OPTIONAL { ?agent schema:familyName ?familyName } .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?entity schema:license ?license } .
-?entity ^prov:used / prov:wasAssociatedWith ?softwareAgent .
-?softwareAgent a prov:SoftwareAgent ;
-                 schema:name ?softwareName ;
-                 nsg:softwareSourceCode / schema:codeRepository ?codeRepository ;
-                 nsg:softwareSourceCode / schema:version ?codeVersion ;
-                 nsg:softwareSourceCode / schema:runtimePlatform ?runtimePlatform .
-}
-LIMIT 100`,
-    input_data: `
-   PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?input ?inputDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
-WHERE {
-?entity nxv:self ?self_wo_tag ;
-   nxv:deprecated false ;
-   nxv:createdAt ?registeredAt ;
-   nxv:createdBy ?registered_by ;
-   nxv:updatedAt ?updatedAt ;
-   nxv:updatedBy ?updated_by ;
-   a schema:Dataset ;
-   schema:name ?input ;
-   schema:description ?inputDescription .
- FILTER NOT EXISTS { ?entity nsg:derivation / prov:entity / schema:name ?derivation } .
- FILTER NOT EXISTS { ?entity schema:name "notebooks" } .
-  OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
-  OPTIONAL { ?agent schema:familyName ?familyName } . 
-  OPTIONAL { ?agent schema:givenName ?givenName } . 
-  OPTIONAL { ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?modelledBrainRegion } . 
-  OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?modelledSpecies } . 
-  OPTIONAL { ?entity schema:license ?license } .  
-  BIND (STR(?registered_by) AS ?registered_by_str) .
-  BIND (STR(?updated_by) AS ?updated_by_str) .
-  FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
-}
-GROUP BY ?self ?entity ?input ?license ?inputDescription ?modelledBrainRegion ?modelledSpecies ?givenName ?familyName ?contributor ?registeredAt ?updatedAt ?registered_by ?registered_by_str ?registeredBy ?updated_by ?updated_by_str ?updatedBy ?self_wo_tag
-LIMIT 100  `,
-    notebooks: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX schema: <http://schema.org/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX vocab: <https://bbp.epfl.ch/nexus/v1/resources/public/topological-sampling/_/>
+PREFIX bmo: <https://bbp.epfl.ch/ontologies/core/bmo/>
 
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?name ?description (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
-WHERE {
-?entity nxv:self ?self_wo_tag ;
-   nxv:deprecated false ;
-   nxv:createdAt ?registeredAt ;
-   nxv:createdBy ?registered_by ;
-   nxv:updatedAt ?updatedAt ;
-   nxv:updatedBy ?updated_by ;
-   a vocab:Notebook ;
-   schema:name ?name ;
-   schema:description ?description ;
-  BIND (STR(?registered_by) AS ?registered_by_str) .
-  BIND (STR(?updated_by) AS ?updated_by_str) .
-OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
-OPTIONAL { ?agent schema:familyName ?familyName } .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?entity schema:license ?license } .
-}
-LIMIT 100  `
+SELECT DISTINCT ?self ?name ?brainRegion ?subjectName ?subjectSpecies ?subjectStrain ?mtype ?contributor ?description ?license
+WHERE { 
+  GRAPH ?g0 {
+?entity nxv:self ?self ;
+        a nsg:NeuronMorphology ;
+        nxv:deprecated false ;
+        schema:name ?name ;
+        schema:description ?description ;
+        nxv:createdBy ?registered_by ;
+        nxv:createdAt ?registeredAt .
+
+OPTIONAL { ?entity nsg:subject / schema:name ?subjectName } .
+OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies } .
+OPTIONAL { ?entity nsg:subject / nsg:strain / rdfs:label ?subjectStrain } .
+OPTIONAL { ?entity nsg:brainLocation / nsg:coordinatesInBrainAtlas / nsg:valueX ?xCoordinate ;
+         		   nsg:brainLocation / nsg:coordinatesInBrainAtlas / nsg:valueY ?yCoordinate ;
+         		   nsg:brainLocation / nsg:coordinatesInBrainAtlas / nsg:valueZ ?zCoordinate} .
+OPTIONAL { ?entity  nsg:brainLocation / nsg:atlasSpatialReferenceSystem ?atlas_identifier } .
+OPTIONAL { ?entity  nsg:generation / prov:activity / nsg:hadProtocol / schema:keywords ?reconstructionSystem } .
+OPTIONAL { ?entity  nsg:generation / prov:activity / nsg:hadProtocol / schema:citation ?paperCitation } .
+OPTIONAL { ?entity nsg:annotation ?ssomaAnnotation .
+          ?ssomaAnnotation bmo:compartment "Soma" ;
+                      nsg:hasBody ?somaBody .
+          ?somaBody nsg:isMeasurementOf / rdfs:label "Soma Number Of Points" ;
+                nsg:series ?soma_mean_stat .
+          ?soma_mean_stat nsg:statistic "N" ;
+                     schema:value ?somaNumberOfPoints } .
+OPTIONAL { ?entity nsg:annotation ?axonAnnotation .
+          ?axonAnnotation bmo:compartment "Axon" ;
+                      nsg:hasBody ?axonBody .
+          ?axonBody nsg:isMeasurementOf / rdfs:label "Total Length" ;
+                nsg:series ?axon_mean_stat .
+          ?axon_mean_stat nsg:statistic "mean" ;
+                     schema:value ?length ;
+         			 schema:unitCode ?unit } .
+    
+    
+ OPTIONAL { ?entity nsg:annotation ?mtypeAnnotation. 
+            ?mtypeAnnotation a nsg:MTypeAnnotation ;
+                               nsg:hasBody / rdfs:label ?mtype } .   
+    
+      OPTIONAL { ?entity schema:license ?license } . 
+    
+BIND (STR(?registered_by) AS ?registered_by_str) . 
+BIND (STR(?atlas_identifier) AS ?atlas_identifier_) . 
+ }
+  OPTIONAL { ?entity nsg:contribution / prov:agent / schema:name ?contributor } .
+GRAPH ?g {
+    OPTIONAL {
+      ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion .
+    }
+  }
+}   
+LIMIT 1000`,
 };
 
 const fetch_query = async (query: string) => {
@@ -202,7 +141,7 @@ export const downloadArtifacts = async (resource: any) => {
 }
 
 
-export const data_dashboards_result = await Promise.all(Object.values(data_dashboards).map((query) => {
+export const data_dashboards_result = await Promise.all(Object.values(data).map((query) => {
     return fetch_query(query);
 }))
 

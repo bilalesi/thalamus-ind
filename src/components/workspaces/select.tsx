@@ -1,19 +1,17 @@
 "use client";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuPortal,
-    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { type DataDashboardsListKeys } from "../../lib/shared";
-import { data} from "../../lib/shared";
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { data, type DataDashboardsListKeys } from "../../lib/shared";
 
 export function Workspaces() {
     return (

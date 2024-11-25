@@ -1,9 +1,6 @@
 
 export const data = {
-    analysis_results: "Analysis Results",
-    configurations: "Configurations",
-    input_data: "Input Data",
-    notebooks: "Notebooks",
+    neuron_morphology: "Neuron Morphology",
 }
 
 
@@ -14,10 +11,7 @@ export const workspacesList = {
 export type DataDashboardsListKeys = keyof typeof data;
 
 export const pagesMapping = {
-    "data-analysis_results": "Data - Analysis Results",
-    "data-configurations": "Data - Configurations",
-    "data-input_data": "Data - Input Data",
-    "data-notebooks": "Data - Notebooks",
+    "data-neuron_morphology": "Data - Neuron Morphology",
 }
 
 export const getPageTitleMapping = (ws: string, type: string) => pagesMapping[`${ws}-${type}` as keyof typeof pagesMapping];
