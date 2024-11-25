@@ -14,15 +14,15 @@ export function DataTableToolbar<TData>({
     table,
 }: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0
-
+    const input = table.getColumn("name") ?? table.getColumn("input") ?? table.getColumn("analysisResult") 
     return (
         <div className="flex items-center justify-between">
             <div className="flex flex-1 items-center space-x-2">
                 <Input
                     placeholder="Filter by name..."
-                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+                    value={(input?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
-                        table.getColumn("name")?.setFilterValue(event.target.value)
+                        input?.setFilterValue(event.target.value)
                     }
                     className="h-10 w-[250px] lg:w-[450px]"
                 />

@@ -134,3 +134,5 @@ creed/thalamus.sqlite
 node_modules
 .astro
 public/artifacts
+public/artifacts_1
+public/resources

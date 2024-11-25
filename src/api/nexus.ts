@@ -1,546 +1,135 @@
-const url = "https://bbp.epfl.ch/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021.2SparqlIndex/sparql"
 // const url = "https://openbluebrain.com/api/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
 
 const token = "Bearer xxx";
 
-const experimental_data = {
-    morphology: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?brainRegion ?mtype (GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies (CONCAT(STR(?ageValue), " ", ?ageUnit, " ", ?agePeriod) AS ?subjectAge  )
-WHERE {
-?entity nxv:self ?self_wo_rev ;
-        a nsg:NeuronMorphology ;
-        schema:name ?name ;
-        nxv:createdBy ?registered_by ;
-        nxv:createdAt ?registeredAt ;
-        schema:distribution / schema:encodingFormat "application/swc" ;
-        nxv:rev ?rev ;
-        nxv:deprecated false .
-GRAPH ?g { OPTIONAL {
-    ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } } .
-BIND (STR(?registered_by) AS ?registered_by_str) .
-OPTIONAL { ?entity nsg:annotation ?mtypeAnnotation. 
-            ?mtypeAnnotation a nsg:MTypeAnnotation ;
-                            nsg:hasBody / rdfs:label ?mtype } .
-OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies } .
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?agent schema:familyName ?familyName } . 
-OPTIONAL { ?agent schema:name ?orgName } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:value ?ageValue } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:unitCode ?ageUnit } .
-OPTIONAL { ?entity nsg:subject / nsg:age / nsg:period ?agePeriod } . 
-OPTIONAL { ?entity schema:license ?license } . 
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-FILTER NOT EXISTS { ?entity schema:isPartOf ?part } .
-        
-} 
-GROUP BY ?self ?entity ?name ?registered_by ?registeredAt ?registered_by_str ?g ?registeredBy ?brainRegion ?mtype ?ageValue ?ageUnit ?agePeriod ?subjectAge ?subjectSpecies ?license
-LIMIT 1000       
-`,
-    electrophysilogy: `
+const data_dashboards = {
+    analysis_results: `
     PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX nsg: <https://neuroshapes.org/>
 PREFIX schema: <http://schema.org/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-
-SELECT ?self ?experiment ?etype ?brainRegion (GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies (CONCAT(STR(?ageValue), " ", ?ageUnit, " ", ?agePeriod) AS ?subjectAge)
-
-WHERE {
-?entity nxv:self ?self_wo_rev ;
-    a nsg:Trace ;
-    nxv:rev ?rev ;
-    nxv:deprecated false ;
-    schema:identifier ?experiment ;
-    skos:note ?session ;
-    schema:distribution / schema:encodingFormat "application/nwb" .
-GRAPH ?g {
-  ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion .
-OPTIONAL { ?entity nsg:annotation ?etypeAnnotation . 
-          ?etypeAnnotation a nsg:ETypeAnnotation ;
-                           nsg:hasBody / rdfs:label ?etype } .
-} .
-OPTIONAL { ?entity schema:dateCreated ?experimentDate } .
-OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:value ?ageValue } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:unitCode ?ageUnit } .
-OPTIONAL { ?entity nsg:subject / nsg:age / nsg:period ?agePeriod } .  
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?agent schema:familyName ?familyName } . 
-OPTIONAL { ?agent schema:name ?orgName } .
-OPTIONAL { ?entity schema:license ?license } .
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND( IRI(CONCAT( STR(?self_wo_rev), "?rev=", STR(?rev))) AS ?self) .
-} 
-GROUP BY ?self ?entity ?name ?experiment ?experimentDate ?brainRegion ?etype ?ageValue ?ageUnit ?agePeriod ?subjectAge ?subjectSpecies ?license ?g
-LIMIT 2000          
-`,
-    layer_antaomy: `
-    PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-
-SELECT DISTINCT ?self ?brainRegion (CONCAT(STR(?thicknessValue), " ", ?thicknessUnit) AS ?layerThickness)  
-?description  ?subjectSpecies (CONCAT(STR(?ageValue), " ", ?ageUnit, " ", ?agePeriod) AS ?subjectAge) (GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license
-WHERE { 
-?entity nxv:self ?self_wo_rev ; 
-    a nsg:LayerThickness ;
-    nxv:deprecated false ;
-    nxv:rev ?rev ;
-    nsg:series ?meanSeries ;
-    nsg:series ?nSeries .
-?meanSeries nsg:statistic "mean" .
-?meanSeries schema:value ?thicknessValue .
-?meanSeries schema:unitCode ?thicknessUnit .
-?nSeries nsg:statistic "N" .
-?nSeries schema:value ?nValue . 
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL {?agent schema:givenName ?givenName } .
-OPTIONAL {?agent schema:familyName ?familyName } . 
-OPTIONAL {?agent schema:name ?orgName } .
-OPTIONAL {?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies  } .
-OPTIONAL {?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } .
-OPTIONAL {?entity schema:description ?description } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:value ?ageValue } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:unitCode ?ageUnit } .
-OPTIONAL { ?entity nsg:subject / nsg:age / nsg:period ?agePeriod } .
-OPTIONAL { ?entity schema:license ?license } .  
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND( IRI(CONCAT( STR(?self_wo_rev),  "?rev=", STR(?rev))) AS ?self) .
-} 
-GROUP BY ?self ?entity ?name ?meanSeries ?thicknessValue ?thicknessUnit ?nValue 
-?nSeries ?description ?brainRegion ?subjectSpecies ?ageValue ?ageUnit ?agePeriod ?subjectAge ?license
-
-LIMIT 1000                                
-`,
-    neuron_density: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-
-SELECT DISTINCT ?self ?brainRegion (CONCAT(STR(?densityValue), " ", ?densityUnit) AS ?neuronDensity)  
-(GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies (CONCAT(STR(?ageValue), " ", ?ageUnit, " ", ?agePeriod) AS ?subjectAge)
-WHERE {  
-?entity nxv:self ?self_wo_rev ; 
-    a nsg:NeuronDensity ;
-    nxv:rev ?rev ;
-    nxv:deprecated false ;
-    nsg:series ?meanSeries ;
-    nsg:series ?nSeries .
-?meanSeries nsg:statistic ?stat .
-FILTER ( ?stat = "mean" ||
-     ?stat = "data point" ) .
-?meanSeries schema:value ?densityValue .
-?meanSeries schema:unitCode ?densityUnit .
-?nSeries nsg:statistic "N" .
-?nSeries schema:value ?nValue .
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL {?agent schema:givenName ?givenName } .
-OPTIONAL {?agent schema:familyName ?familyName } . 
-OPTIONAL {?agent schema:name ?orgName } .
-OPTIONAL {?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies  } .
-OPTIONAL {?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } .
-OPTIONAL {?entity schema:description ?description } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:value ?ageValue } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:unitCode ?ageUnit } .
-OPTIONAL { ?entity nsg:subject / nsg:age / nsg:period ?agePeriod } .
-OPTIONAL {?entity schema:license ?license } .
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND( IRI(CONCAT( STR(?self_wo_rev),  "?rev=", STR(?rev))) AS ?self)
-} 
-GROUP BY ?self ?entity ?name ?meanSeries ?ageValue ?ageUnit ?agePeriod ?densityValue ?densityUnit ?nValue ?nSeries ?description ?brainRegion ?subjectSpecies ?license
-
-LIMIT 1000                                 
-`,
-    bouton_density: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-
-SELECT DISTINCT ?self 
-?name 
-?brainRegion
-(CONCAT(STR(?denValue)," ", ?denUnit) AS ?density)  
-(GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor)
-?license 
-?subjectSpecies
-(CONCAT(STR(?ageValue), " ", ?ageUnit, " ", ?agePeriod) AS ?subjectAge)
-
-WHERE { 
-?entity nxv:self ?self_wo_rev ; 
-    rdf:type nsg:BoutonDensity ;
-    schema:name ?name ;
-    nxv:deprecated false ;
-    nxv:rev ?rev ;
-    nsg:series ?denMean .
-?denMean nsg:statistic "mean" ;
-     schema:value ?denValue ;
-    schema:unitCode ?denUnit .
-OPTIONAL {?entity nsg:mType / rdfs:label ?mType } .
-OPTIONAL {?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies  } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:value ?ageValue } .
-OPTIONAL { ?entity nsg:subject / nsg:age / schema:unitCode ?ageUnit } .
-OPTIONAL { ?entity nsg:subject / nsg:age / nsg:period ?agePeriod } .
-GRAPH ?g { OPTIONAL {?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } } .
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL {?agent schema:givenName ?givenName } .
-OPTIONAL {?agent schema:familyName ?familyName } . 
-OPTIONAL {?agent schema:name ?orgName } .
-OPTIONAL {?entity schema:license ?license } .
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND( IRI(CONCAT( STR(?self_wo_rev),  "?rev=", STR(?rev))) AS ?self) .
-    
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?analysisResult ?analysisResultDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) 
+?codeVersion ?license 
+WHERE  {  
+  ?entity nxv:self ?self ;
+   nxv:deprecated false ;
+   a schema:Dataset ;
+   schema:name ?analysisResult ;
+   schema:description ?analysisResultDescription .
+ ?entity nsg:derivation / prov:entity / schema:name ?derivation . 
+ ?entity nsg:generation / prov:activity / prov:wasAssociatedWith ?softwareAgent .
+ ?softwareAgent a prov:SoftwareAgent ;
+                 schema:name ?softwareName ;
+                 nsg:softwareSourceCode / schema:codeRepository ?codeRepository ;
+                 nsg:softwareSourceCode / schema:version ?codeVersion .
+  OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
+  OPTIONAL { ?agent schema:familyName ?familyName } . 
+  OPTIONAL { ?agent schema:givenName ?givenName } . 
+  OPTIONAL { ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?modelledBrainRegion } . 
+  OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?modelledSpecies } . 
+  OPTIONAL { ?entity schema:license ?license } .  
+  FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
 }
-GROUP BY ?self ?entity ?name ?denMean ?denValue ?denUnit  ?mType ?subjectSpecies ?g ?brainRegion ?ageValue ?ageUnit ?agePeriod ?subjectAge ?license  
-LIMIT 1000 
-`,
+LIMIT 100`,
+    configurations: `
+PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+PREFIX schema: <http://schema.org/>
+PREFIX nsg: <https://neuroshapes.org/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?name (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?softwareName ?codeVersion ?codeRepository ?runtimePlatform ?license
+WHERE {
+?entity nxv:self ?self_wo_tag ;
+   nxv:deprecated false ;
+   nxv:createdAt ?registeredAt ;
+   nxv:createdBy ?registered_by ;
+   nxv:updatedAt ?updatedAt ;
+   nxv:updatedBy ?updated_by ;
+   a nsg:Configuration ;
+   schema:name ?name ;
+  BIND (STR(?registered_by) AS ?registered_by_str) .
+  BIND (STR(?updated_by) AS ?updated_by_str) .
+OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
+OPTIONAL { ?agent schema:familyName ?familyName } .
+OPTIONAL { ?agent schema:givenName ?givenName } .
+OPTIONAL { ?entity schema:license ?license } .
+?entity ^prov:used / prov:wasAssociatedWith ?softwareAgent .
+?softwareAgent a prov:SoftwareAgent ;
+                 schema:name ?softwareName ;
+                 nsg:softwareSourceCode / schema:codeRepository ?codeRepository ;
+                 nsg:softwareSourceCode / schema:version ?codeVersion ;
+                 nsg:softwareSourceCode / schema:runtimePlatform ?runtimePlatform .
+}
+LIMIT 100`,
+    input_data: `
+   PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+PREFIX nsg: <https://neuroshapes.org/>
+PREFIX schema: <http://schema.org/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?input ?inputDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
+WHERE {
+?entity nxv:self ?self_wo_tag ;
+   nxv:deprecated false ;
+   nxv:createdAt ?registeredAt ;
+   nxv:createdBy ?registered_by ;
+   nxv:updatedAt ?updatedAt ;
+   nxv:updatedBy ?updated_by ;
+   a schema:Dataset ;
+   schema:name ?input ;
+   schema:description ?inputDescription .
+ FILTER NOT EXISTS { ?entity nsg:derivation / prov:entity / schema:name ?derivation } .
+ FILTER NOT EXISTS { ?entity schema:name "notebooks" } .
+  OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
+  OPTIONAL { ?agent schema:familyName ?familyName } . 
+  OPTIONAL { ?agent schema:givenName ?givenName } . 
+  OPTIONAL { ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?modelledBrainRegion } . 
+  OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?modelledSpecies } . 
+  OPTIONAL { ?entity schema:license ?license } .  
+  BIND (STR(?registered_by) AS ?registered_by_str) .
+  BIND (STR(?updated_by) AS ?updated_by_str) .
+  FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
+}
+GROUP BY ?self ?entity ?input ?license ?inputDescription ?modelledBrainRegion ?modelledSpecies ?givenName ?familyName ?contributor ?registeredAt ?updatedAt ?registered_by ?registered_by_str ?registeredBy ?updated_by ?updated_by_str ?updatedBy ?self_wo_tag
+LIMIT 100  `,
+    notebooks: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+PREFIX schema: <http://schema.org/>
+PREFIX nsg: <https://neuroshapes.org/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX vocab: <https://bbp.epfl.ch/nexus/v1/resources/public/topological-sampling/_/>
+
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?name ?description (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
+WHERE {
+?entity nxv:self ?self_wo_tag ;
+   nxv:deprecated false ;
+   nxv:createdAt ?registeredAt ;
+   nxv:createdBy ?registered_by ;
+   nxv:updatedAt ?updatedAt ;
+   nxv:updatedBy ?updated_by ;
+   a vocab:Notebook ;
+   schema:name ?name ;
+   schema:description ?description ;
+  BIND (STR(?registered_by) AS ?registered_by_str) .
+  BIND (STR(?updated_by) AS ?updated_by_str) .
+OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
+OPTIONAL { ?agent schema:familyName ?familyName } .
+OPTIONAL { ?agent schema:givenName ?givenName } .
+OPTIONAL { ?entity schema:license ?license } .
+}
+LIMIT 100  `
 };
-
-const digital_reconstruction = {
-    single_cell_model: `
-    PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?mType ?eType ?brainRegion (GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies ?morphology
-?electrophysiology
-
-WHERE {
-?entity nxv:self ?self_wo_rev ;
-    nxv:rev ?rev ;
-    a nsg:MEModel ; 
-    schema:name ?name ;
-    nxv:deprecated false .
-GRAPH ?g { OPTIONAL {
-  ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } .
-?entity nsg:annotation ?mtype_annotation .
-?mtype_annotation a nsg:MTypeAnnotation ;
-          nsg:hasBody / rdfs:label ?mType .
-?entity nsg:annotation ?etype_annotation .
-?etype_annotation a nsg:ETypeAnnotation ;
-          nsg:hasBody / rdfs:label ?eType } .
-?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies .
-?entity nsg:contribution / prov:agent ?agent .
-?entity ^schema:isPartOf ?morph .
-?morph a nsg:NeuronMorphology ;
-       schema:name ?morphology .
-?entity ^schema:isPartOf ?trace .
-?trace a nsg:Trace ;
-       nxv:deprecated false ;
-       schema:name ?electrophysiology .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?agent schema:familyName ?familyName } . 
-OPTIONAL { ?agent schema:name ?orgName } . 
-OPTIONAL { ?entity schema:license ?license } . 
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-    
-} 
-GROUP BY ?self ?entity ?name ?g ?brainRegion ?mType ?eType ?ageValue ?ageUnit ?agePeriod ?subjectAge ?subjectSpecies ?license ?morphology ?electrophysiology
-LIMIT 1000`,
-    neuron_morphology: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?mtype ?brainRegion (GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies
-
-WHERE {
-?entity nxv:self ?self_wo_rev ;
-    nxv:rev ?rev ;
-    a nsg:NeuronMorphology ;
-    schema:name ?name ;
-    schema:distribution / schema:encodingFormat "application/swc" ;
-    nxv:deprecated false ;
-    schema:isPartOf ?dataset .
-GRAPH ?g { OPTIONAL {
-  ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } } .
-OPTIONAL { ?entity nsg:annotation / nsg:hasBody / rdfs:label ?mtype } .
-OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies } .
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?agent schema:familyName ?familyName } . 
-OPTIONAL { ?agent schema:name ?orgName } .
-OPTIONAL { ?entity schema:license ?license } . 
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-    
-} 
-GROUP BY ?self ?entity ?name ?g ?brainRegion ?mtype ?ageValue ?ageUnit ?agePeriod ?subjectAge ?subjectSpecies ?license ?dataset
-LIMIT 1000
-`,
-    neuron_electrophysiology: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-
-SELECT ?self ?name ?mType ?eType ?brainRegion (GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies
-
-WHERE {
-?entity nxv:self ?self_wo_rev ;
-    nxv:rev ?rev ;
-    a nsg:SingleCellSimulationTrace ;
-    nxv:deprecated false ;
-    schema:name ?name ;
-    nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion ;
-    schema:distribution / schema:encodingFormat "application/nwb" .
-GRAPH ?g { ?entity nsg:annotation ?mtype_annotation .
-?mtype_annotation a nsg:MTypeAnnotation ;
-          nsg:hasBody / rdfs:label ?mType .
-?entity nsg:annotation ?etype_annotation .
-?etype_annotation a nsg:ETypeAnnotation ;
-          nsg:hasBody / rdfs:label ?eType } .
-OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies } .
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?agent schema:familyName ?familyName } . 
-OPTIONAL { ?agent schema:name ?orgName } .
-OPTIONAL { ?entity schema:license ?license } .
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-} 
-GROUP BY ?self ?entity ?name ?brainRegion ?mType ?eType ?mtype_annotation ?etype_annotation ?subjectSpecies ?license ?g
-LIMIT 2000`,
-    fact_sheet: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-PREFIX vocab: <https://bbp.epfl.ch/nexus/v1/resources/public/thalamus/_/>
-SELECT DISTINCT ?self ?name ?mType ?eType ?brainRegion 
-(CONCAT(STR(?fact1_value), " ", ?fact1_unitCode) AS ?totalAxonLength )
-(CONCAT(STR(?fact2_value), " ", ?fact2_unitCode) AS ?totalDendriteLength )
-(CONCAT(STR(?fact3_value), " ", ?fact3_unitCode) AS ?restingMembranePotential )
-(CONCAT(STR(?fact4_value), " ", ?fact4_unitCode) AS ?inputResistance )
-(CONCAT(STR(?fact5_value), " ", ?fact5_unitCode) AS ?membraneTimeConstant )
-(GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies
-
-
-WHERE {
-?entity nxv:self ?self ;
-    a nsg:METypeFactSheet ;
-    schema:name ?name ;
-    nxv:deprecated false .
-GRAPH ?g { OPTIONAL {
-  ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } .
-?entity nsg:annotation ?mtype_annotation .
-?mtype_annotation a nsg:MTypeAnnotation ;
-          nsg:hasBody / rdfs:label ?mType .
-?entity nsg:annotation ?etype_annotation .
-?etype_annotation a nsg:ETypeAnnotation ;
-          nsg:hasBody / rdfs:label ?eType } .
-?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies .
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?agent schema:familyName ?familyName } . 
-OPTIONAL { ?agent schema:name ?orgName } . 
-OPTIONAL { ?entity schema:license ?license } . 
-OPTIONAL { ?entity vocab:fact ?fact1 .
-            ?fact1 schema:name "total axon length" ;
-                   schema:unitCode ?fact1_unitCode ;
-                   schema:value ?fact1_value } .
-OPTIONAL { ?entity vocab:fact ?fact2 .
-            ?fact2 schema:name "total dendrite length" ;
-                   schema:unitCode ?fact2_unitCode ;
-                   schema:value ?fact2_value } .
-OPTIONAL { ?entity vocab:fact ?fact3 .
-            ?fact3 schema:name "resting membrane potential" ;
-                   schema:unitCode ?fact3_unitCode ;
-                   schema:value ?fact3_value } .
-OPTIONAL { ?entity vocab:fact ?fact4 .
-            ?fact4 schema:name "input resistance" ;
-                   schema:unitCode ?fact4_unitCode ;
-                   schema:value ?fact4_value } . 
-OPTIONAL { ?entity vocab:fact ?fact5 .
-            ?fact5 schema:name "membrane time constant" ;
-                   schema:unitCode ?fact5_unitCode ;
-                   schema:value ?fact5_value } .
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .
-    
-} 
-GROUP BY ?self ?entity ?name ?g ?brainRegion ?mType ?eType ?subjectSpecies ?license ?fact1 ?fact1_unitCode ?fact1_value
-?fact2 ?fact2_unitCode ?fact2_value ?fact3 ?fact3_unitCode ?fact3_value ?fact4 ?fact4_unitCode ?fact4_value ?fact5 ?fact5_unitCode ?fact5_value
-LIMIT 1000`,
-    microcircuit_reconstruction: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-PREFIX vocab: <https://bbp.epfl.ch/nexus/v1/resources/public/thalamus/_/>
-SELECT DISTINCT ?self ?name ?brainRegion 
-(GROUP_CONCAT(DISTINCT ?cont; SEPARATOR=", ") AS ?contributor) ?license ?subjectSpecies
-
-
-WHERE {
-?entity nxv:self ?self_wo_rev ;
-    a nsg:Circuit ;
-    nxv:rev ?rev ;
-    schema:name ?name ;
-    nxv:deprecated false .
-GRAPH ?g { OPTIONAL {
-?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?brainRegion } .
-?entity nsg:subject / nsg:species / rdfs:label ?subjectSpecies } .
-?entity nsg:contribution / prov:agent ?agent .
-OPTIONAL { ?agent schema:givenName ?givenName } .
-OPTIONAL { ?agent schema:familyName ?familyName } . 
-OPTIONAL { ?agent schema:name ?orgName } . 
-OPTIONAL { ?entity schema:license ?license } .
-BIND(COALESCE(?orgName, CONCAT(?givenName, " ", ?familyName)) AS ?cont ) .  
-BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-} 
-GROUP BY ?self ?entity ?name ?g ?brainRegion ?subjectSpecies ?license
-LIMIT 1000`,
-
-}
-
-const network_simulation = {
-    evoked_sensory_activity_in_vivo_like_condition: ` 
-    PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?description ?link
-
-WHERE {
-  GRAPH ?g {
-<https://bbp.epfl.ch/neurosciencegraph/data/9133f5ae-fcd8-4d72-adba-f16cf9b32765> nxv:self ?self_wo_rev;
-        schema:name ?name ;
-        nxv:rev ?rev ;
-        schema:itemListElement ?element .
-        ?element schema:embedUrl ?link ;
-                 schema:description ?description .
-    }
-  BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-}
-GROUP BY ?self ?name ?description ?link
-LIMIT 1000`,
-    sensory_adaptation_control_vs_cortical_input_in_vivo_like_condition: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?description ?link
-
-WHERE {
-<https://bbp.epfl.ch/neurosciencegraph/data/96ec825d-c4d3-41b4-a8bd-2783a0ebb4fb> nxv:self ?self_wo_rev ;
-        schema:name ?name ;
-        nxv:rev ?rev ;
-        schema:itemListElement / schema:embedUrl ?link ;
-        schema:itemListElement / schema:description ?description .
-      BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-} 
-LIMIT 1000`,
-    transition_from_wakefulness_like_states_to_simulated_cortical: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?description ?link
-
-WHERE {
-<https://bbp.epfl.ch/neurosciencegraph/data/a55ad3aa-0eb1-474e-a9cf-f3a85f6e924e> nxv:self ?self_wo_rev ;
-        nxv:rev ?rev ;
-        schema:name ?name ;
-        schema:itemListElement / schema:embedUrl ?link ;
-        schema:itemListElement / schema:description ?description .
-  BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-} 
-LIMIT 1000`,
-    spindle_like_oscillations_in_vitro_like_condition: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?description ?link
-
-WHERE {
-<https://bbp.epfl.ch/neurosciencegraph/data/3d6fecdd-2f95-4fc8-ba16-16285aabb337> nxv:self ?self_wo_rev ;
-        nxv:rev ?rev ;
-        schema:name ?name ;
-        schema:itemListElement / schema:embedUrl ?link ;
-        schema:itemListElement / schema:description ?description .
-      BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-} 
-LIMIT 1000`,
-    spindle_like_oscillations_control_vs_gap_junctions_removed: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
-PREFIX nsg: <https://neuroshapes.org/>
-PREFIX schema: <http://schema.org/>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX bmo: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?name ?description ?link
-
-WHERE {
-<https://bbp.epfl.ch/neurosciencegraph/data/65635a0d-13df-4303-9814-c32dc8bdb690> nxv:self ?self_wo_rev ;
-        schema:name ?name ;
-        nxv:rev ?rev ; 
-        schema:itemListElement / schema:embedUrl ?link ;
-        schema:itemListElement / schema:description ?description .
-  BIND ( IRI( CONCAT(STR(?self_wo_rev), "?rev=", STR(?rev)) ) AS ?self ) .
-} 
-LIMIT 1000`
-}
 
 const fetch_query = async (query: string) => {
     const response = await fetch(url, {
@@ -569,6 +158,7 @@ export const fetch_resource = async (url: string, type: "blob" | "json" = "json"
         "method": "get",
         "mode": "cors"
     });
+
     if (type === "json") return await resp.json();
     else if (type === "blob") {
         return await (await resp.arrayBuffer())
@@ -612,18 +202,9 @@ export const downloadArtifacts = async (resource: any) => {
 }
 
 
-export const experimental_data_result = await Promise.all(Object.values(experimental_data).map((query) => {
+export const data_dashboards_result = await Promise.all(Object.values(data_dashboards).map((query) => {
     return fetch_query(query);
 }))
-
-export const digital_reconstruction_result = await Promise.all(Object.values(digital_reconstruction).map((query) => {
-    return fetch_query(query);
-}))
-
-export const network_simulation_result = await Promise.all(Object.values(network_simulation).map((query) => {
-    return fetch_query(query);
-}))
-
 
 
 import { mkdir, } from 'node:fs/promises';
@@ -695,8 +276,8 @@ export async function processPageType(
             const resource = await fetch_resource(res.self);
             const resouce_name = resource.name;
             // NOTE: need to check the resource response differernt to error context
-            // resource['@context'] === 'https://bluebrain.github.io/nexus/contexts/error.json'
-            if (!existsSync(`${res_path}/${resource.name}.json`) && resouce_name) {
+            // resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json'
+            if (!existsSync(`${res_path}/${resource.name}.json`) && resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json') {
                 await writeFile(`${res_path}/${resource.name}.json`, Buffer.from(JSON.stringify(resource)), {
                     flag: "wx",
                 });
@@ -710,10 +291,12 @@ export async function processPageType(
                     const size = dist["contentSize"]["value"];
                     const url = dist.contentUrl;
                     if (!existsSync(`${path}/${name}`) && dist.contentUrl) {
-                        const binary = await fetch_resource(dist.contentUrl, "blob");
-                        await writeFile(`${path}/${name}`, Buffer.from(binary), {
-                            flag: "wx",
-                        });
+                        if (size <= 2_000_000_000) {
+                            const binary = await fetch_resource(dist.contentUrl, "blob");
+                            await writeFile(`${path}/${name}`, Buffer.from(binary), {
+                                flag: "wx",
+                            });
+                        }
                     } else {
                         //   console.log("@@file-exist", name);
                     }

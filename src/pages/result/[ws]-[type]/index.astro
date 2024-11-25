@@ -3,10 +3,8 @@ import Table from "@/components/data-table";
 
 import {
   createTemporaryDirectory,
-  digital_reconstruction_result,
-  network_simulation_result,
-  experimental_data_result,
   processPageType,
+  data_dashboards_result,
 } from "@/api/nexus";
 import Layout from "@/layouts/result-layout.astro";
 import { getPageTitleMapping } from "@/lib/shared";
@@ -24,59 +22,25 @@ export async function getStaticPaths() {
     }>;
     rows: any[];
   }> = [];
-  const [
-    morphology,
-    electrophysiology,
-    layer_anatomy,
-    neuron_density,
-    bouton_density,
-  ] = experimental_data_result;
-  const experimental_data = {
-    morphology,
-    electrophysiology,
-    layer_anatomy,
-    neuron_density,
-    bouton_density,
+  const [analysis_results, configurations, input_data, notebooks] =
+    data_dashboards_result;
+  const data = {
+    analysis_results,
+    configurations,
+    input_data,
+    notebooks,
   };
 
-  const [
-    single_cell_model,
-    neuron_morphology,
-    neuron_electrophysiology,
-    fact_sheet,
-    microcircuit_reconstruction,
-  ] = digital_reconstruction_result;
-  const digital_reconstruction = {
-    single_cell_model,
-    neuron_morphology,
-    neuron_electrophysiology,
-    fact_sheet,
-    microcircuit_reconstruction,
-  };
-  const [
-    evoked_sensory_activity_in_vivo_like_condition,
-    sensory_adaptation_control_vs_cortical_input_in_vivo_like_condition,
-    transition_from_wakefulness_like_states_to_simulated_cortical,
-    spindle_like_oscillations_in_vitro_like_condition,
-    spindle_like_oscillations_control_vs_gap_junctions_removed,
-  ] = network_simulation_result;
-  const network_simulation = {
-    evoked_sensory_activity_in_vivo_like_condition,
-    sensory_adaptation_control_vs_cortical_input_in_vivo_like_condition,
-    transition_from_wakefulness_like_states_to_simulated_cortical,
-    spindle_like_oscillations_in_vitro_like_condition,
-    spindle_like_oscillations_control_vs_gap_junctions_removed,
-  };
   const _path = `${process.cwd()}/public/artifacts`;
   const path = await createTemporaryDirectory(_path);
   const resource_folder = `${process.cwd()}/public/resources`;
 
-  for (const k of Object.keys(experimental_data)) {
+  for (const k of Object.keys(data)) {
     const final_data: any[] = [];
     const res_path = await createTemporaryDirectory(
-      `${resource_folder}/experimental_data/${k}`
+      `${resource_folder}/${k}`
     );
-    const dash = experimental_data[k as keyof typeof experimental_data];
+    const dash = data[k as keyof typeof data];
     try {
       await processPageType(
         dash,
@@ -85,55 +49,10 @@ export async function getStaticPaths() {
         final_data,
         pages,
         k,
-        "experimental_data"
+        "data"
       );
     } catch (error) {
-      console.error("[error][experimental_data]", error);
-    }
-  }
-
-  for (const k of Object.keys(digital_reconstruction)) {
-    const final_data: any[] = [];
-    const res_path = await createTemporaryDirectory(
-      `${resource_folder}/digital_reconstruction/${k}`
-    );
-
-    const dash =
-      digital_reconstruction[k as keyof typeof digital_reconstruction];
-    try {
-      await processPageType(
-        dash,
-        path,
-        res_path,
-        final_data,
-        pages,
-        k,
-        "digital_reconstruction"
-      );
-    } catch (error) {
-      console.error("[error][digital_reconstruction]", error);
-    }
-  }
-
-  for (const k of Object.keys(network_simulation)) {
-    const final_data: any[] = [];
-    const res_path = await createTemporaryDirectory(
-      `${resource_folder}/network_simulation/${k}`
-    );
-
-    const dash = network_simulation[k as keyof typeof network_simulation];
-    try {
-      await processPageType(
-        dash,
-        path,
-        res_path,
-        final_data,
-        pages,
-        k,
-        "network_simulation"
-      );
-    } catch (error) {
-      console.error("[error][network_simulation]", error);
+      console.error("[error][data]", error);
     }
   }
 

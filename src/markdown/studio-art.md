@@ -1,43 +1,140 @@
 ---
-title: "Thalamic control of sensory processing and spindles in a biophysical somatosensory thalamoreticular circuit model of wakefulness and sleep"
+title: "Topological sampling data"
 author: "obpp"
 ---
+Here, we provide the input data and analysis results of our manuscript "Topology of synaptic connectivity constrains neuronal stimulus representation, predicting two complementary coding strategies" (https://www.biorxiv.org/content/10.1101/2020.11.02.363929v2). The inputs comprise descriptions of the neurons and connectivity of the model of Markram et al., 2015 (https://www.sciencedirect.com/science/article/pii/S0092867415011915) the identifiers of stimuli injected into the model during a simulation and the responses of excitatory neurons to the stimuli. You can find them under the "Input data" dashboard below.
 
-Elisabetta Iavarone<sup>1</sup>, Jane Simko<sup>2</sup>, Ying Shi<sup>1,2</sup>, Marine Bertschy<sup>2</sup>, María García-Amado<sup>3</sup>, Polina Litvak<sup>1</sup>, Anna-Kristin Kaufmann<sup>1</sup>, Christian O’Reilly<sup>1</sup>, Oren Amsalem<sup>4</sup>, Marwan Abdellah<sup>1</sup>, Grigori Chevtchenko<sup>1</sup>, Benoît Coste<sup>1</sup>, Jean-Denis Courcol<sup>1</sup>, András Ecker<sup>1</sup>, Cyrille Favreau<sup>1</sup>, Adrien Christian Fleury<sup>1</sup>, Werner Van Geit<sup>1</sup>, Michael Gevaert<sup>1</sup>, Nadir Román Guerrero<sup>1</sup>, Joni Herttuainen<sup>1</sup>, Genrich Ivaska<sup>1</sup>, Samuel Kerrien<sup>1</sup>, James G. King<sup>1</sup>, Pramod Kumbhar<sup>1</sup>, Patrycja Lurie<sup>1</sup>, Ioannis Magkanaris<sup>1</sup>, Vignayanandam Ravindernath Muddapu<sup>1</sup>, Jayakrishnan Nair<sup>1</sup>, Fernando L. Pereira<sup>1</sup>, Rodrigo Perin<sup>2</sup>, Fabien Petitjean<sup>1</sup>, Rajnish Ranjan<sup>1</sup>, Michael Reimann<sup>1</sup>, Liviu Soltuzu<sup>1</sup>, Mohameth François Sy<sup>1</sup>, M. Anıl Tuncel<sup>1</sup>, Alexander Ulbrich<sup>1</sup>, Matthias Wolf<sup>1</sup>, Francisco Clascà<sup>3</sup>, Henry Markram<sup>1,2</sup> and Sean L. Hill<sup>1,5,6,7</sup>
+In our code repository (https://github.com/BlueBrain/topological_sampling) you can find the pipeline we used to analyze these inputs and write the results to files. Alternatively, you can find the analysis result files on these pages under the "Analysis results" dashboard. These pages also contain analysis configuration files that specify parameters such as the number of samples to obtain or the number of random controls to generate. They are under the "Configurations" dashboard. Finally, these pages also contain jupyter notebooks that read the analysis results and use them to generate the figures of the manuscript, under the "Notebooks" dashboard.
 
-<sup>1</sup>Blue Brain Project, École polytechnique fédérale de Lausanne (EPFL), Geneva, Switzerland  
-<sup>2</sup>Laboratory of Neural Microcircuitry (LNMC), École polytechnique fédérale de Lausanne (EPFL), Lausanne, Switzerland  
-<sup>3</sup>Departamento de Anatomía, Histología y Neurociencia, Facultad de Medicina, Universidad Autónoma de Madrid, Spain  
-<sup>4</sup>Department of Neurobiology, Hebrew University of Jerusalem, Jerusalem, Israel  
-<sup>5</sup>Department of Psychiatry, University of Toronto, Canada  
-<sup>6</sup>Department of Physiology, University of Toronto, Canada  
-<sup>7</sup>Krembil Centre for Neuroinformatics, Centre for Addiction and Mental Health (CAMH), Toronto, Canada
+A mirror of these data can be found on Zenodo (https://zenodo.org/record/4317336). Zenodo also provides these data a citable DOI.
 
-## Abstract
+## How to use the data
 
-<p style='text-align: justify;'>Thalamoreticular circuitry plays a key role in arousal, attention, cognition, and sleep spindles, and is linked to several brain disorders. A detailed computational model of mouse somatosensory thalamus and thalamic reticular nucleus has been developed to capture the properties of over 14,000 neurons connected by 6 million synapses. The model recreates the biological connectivity of these neurons and simulations of the model reproduce multiple experimental findings in different brain states. The model shows that inhibitory rebound produces frequency-selective enhancement of thalamic responses during wakefulness. We find that thalamic interactions are responsible for the characteristic waxing and waning of spindle oscillations. In addition, we find that changes in thalamic excitability control spindle frequency and their incidence. The model is made openly available to provide a new tool for studying the function and dysfunction of the thalamoreticular circuitry in various brain states.</p>
+The data is provided in hdf5, json and pickle formats. Readers and writers are provided in out code repository (https://github.com/BlueBrain/topological_sampling). It is recommended to use them to access the data. For examples of this, refer to the jupyter notebooks under the "Notebooks" dashboard below.
 
-### Journal Article DOI
+The data is contained in a large number of files that have to be placed into specific location. We have decided to provide individual files instead of one single download, because a user might be interested in only a specific, small portion of the results. The downside is, that you have to create the expected directory structure manually. The structure is relative to a working directory that you can place anywhere in you file system. In the following sections we will call that location "root".
 
-[https://doi.org/10.1016/j.celrep.2023.112200](https://doi.org/10.1016/j.celrep.2023.112200)
+* Files you find under the "Configurations" dashboard below go into root/config
+* The file you find under the "Notebooks" dashboard must be unzipped into root/notebooks
+* Files you find under the "Input data" dashboard below go into root/data/input_data
+* For files you find under the "Analysis results" dashboard, the location depends on the type:
+  * Files with a .pkl or .json extension go into data/analyzed_data
+  * Files with a .h5 extension go into a subdirectory of data/other that is named after the analysis step generating them. (For details, see below).
 
-### Associated Scientific Publications
+The expected structure with ALL files is as follows:
 
-- Iavarone, E., Yi, J., Shi, Y., Zandt, B. J., O’Reilly, C., Van Geit, W., ... & Hill, S. L. (2019). Experimentally-constrained biophysical models of tonic and burst firing modes in thalamocortical neurons. PLoS Computational Biology, 15(5), e1006753. [doi: 10.1371/journal.pcbi.1006753](https://doi.org/10.1371/journal.pcbi.1006753)
-- Iavarone, E. (2020). A computational biophysical model of thalamic and reticular nucleus microcircuitry: from neurons to emergent network dynamics (THESIS No. 7472). EPFL. [doi: 10.5075/epfl-thesis-7472](https://doi.org/10.5075/epfl-thesis-7472)
-- O’Reilly, C., Iavarone, E., Yi, J., & Hill, S. L. (2021). Rodent somatosensory thalamocortical circuitry: neurons, synapses, and connectivity. Neuroscience & Biobehavioral Reviews. [doi: 10.1016/j.neubiorev.2021.03.015](https://doi.org/10.1016/j.neubiorev.2021.03.015)
+```
+root/config:
+    classifier_config.json
+    common_config.json
+    featurization_config.json
+    input_data_config.json
+    manifold_config.json
+    sampling_config.json
+    structural_analysis_config.json
+    struc_volumetric_config.json
+    topo_db_config.json
+    triad_config.json
 
-### About this Studio
+root/data/analyzed_data:
+    classifier_features_results.json
+    classifier_manifold_results.json
+    community_database.pkl
+    extracted_components.json
+    features.json
+    split_spike_trains.npy
+    structural_parameters.json
+    structural_parameters_vol.json
+    triads.json
+    tribes.json
 
-This Blue Brain Project (BBP) [Nexus](https://bluebrainnexus.io/) Studio is a public resource associated with the release of the first biologically-detailed model of a thalamic microcircuit. It is a resource for the community to explore how the BBP reconstruction workflow developed for the neocortex [(Markram et al., 2015)](https://doi.org/10.1016/j.cell.2015.09.029) has been adapted to model another brain region.
+root/data/input_data:
+    connectivity.npz
+    neuron_info.pickle
+    raw_spikes.npy
+    stim_stream.npy
 
-In this Studio, it is possible to download experimental data used for model building and validation, neuron models, circuit model in sonata format, and videos of network simulations. Note that in this Studio, we use the ME-type names "cAD_noscltb" instead of Rt_RC's "cAD_ltb", "cNAD_noscltb" instead of Rt_RC's "cNAD_ltb", "dAD_ltb" instead of VPL_TC's "cAD_ltb", and "dNAD_ltb" instead of VPL_TC's "cNAD_ltb".
+root/data/other/classifier:
+    all_results_components.h5
+    all_results_features.h5
 
-### Data Licenses
+root/data/other/manifold_analysis:
+    all_results.h5
 
-- Wenzhou Medical University: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-- Howard Hughes Medical Institute: [CC-BY NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
-- Autonomous University of Madrid: [CC-BY NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
-- École Polytechnique Fédérale de Lausanne: [CC-BY NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+root/data/other/topological_featurization:
+    all_results.h5
 
-# Graphical Abstract
+root/notebooks:
+    'Figure 1.ipynb'
+    'Figure 2 - D, S6.ipynb'
+    'Figure 2 , S2.ipynb'
+    'Figure 3, S1.ipynb'
+    'Figure 4, S9, S10.ipynb'
+    'Figure 5.ipynb'
+    'Figure 6 - A.ipynb'
+    'Figure 6 - B, C, D.ipynb'
+    'Figure 6 - F, G, H.ipynb'
+    'Figure 7.ipynb'
+    component_reacts_to_novelty.py
+    figure_helper.py
+    helper_functions.py
+    pandas_helper.py
+    plot_helpers.py
+```
+
+### But what ARE all these files?
+
+The formatting of the input data files is described in the readme file of the code repository (https://github.com/BlueBrain/topological_sampling ). The analysis results are best understood in the context of the analysis pipeline step that generated them. To find out which step generated a file, you can refer to the high-level overview plot on the code repository page. Alternatively, this information is also encoded in the configuration:
+
+1. Download the "common_config.json" from the "Configs" dashboard and open it
+2. Within the config, navigate to "paths/analyzed" to find the shorthand label for the file of interest. Example: "database": "community_database.pkl" means, that the community_database.pkl is refered to as "database".
+3. Navigate to "structure" to find the analysis steps that has the file of interest listed as "output". Example:
+
+```json
+"gen_topo_db": {
+    "outputs": {
+    "database": "analyzed"
+}
+```
+
+means that the pipeline stage "gen_topo_db" is the one we are interested in for the purpose of this example.
+
+4.    In the analysis code repository (https://github.com/BlueBrain/topological_sampling ) refer to the documentation / code for that pipeline stage.
+
+## Use cases
+
+Note that depending on what you want to achieve, you might not need all these files, but only a subset of them. In the following sections we will describe two use cases and how to achieve them
+
+**"I want to run the in-depth analysis the same way you did for the manuscript"**
+
+In this case you do not need the analysis results, because in running the analysis pipeline you will generate them yourself!
+
+1. Obtain the code under https://github.com/BlueBrain/topological_sampling
+2. Follow the instructions in the README of the repository to install the "toposample" and "pyflagsercontain" packages and their dependencies.
+3. Obtain the files on these pages under the "Configurations" and "Input data" dashboards and place them into a working directory as described above. Note the location of the "common_config.json" file. The location of that file is the only input required by the subsequent steps of the analysis pipeline.
+4. Run the steps of the analysis pipeline in order, as described in the README of the code repository. Each step is a python script that requires the location of the common_config.json as the only input.
+5. Find the analysis results under root/data/analyzed_data . To get ideas what to do with them, you can download the jupyter notebooks under the "Notebooks" dashboard and see what we did to generate the figures.
+
+**"I want to generate the figures you published in the manuscript / understand how you generated them"**
+
+In that case you won't need the analysis pipeline code from our github. And depending on which figure you are interested in, you might not even need all the analysis results.
+
+1. Create a working directory to put the data into. In the following steps I will call it "root".
+2. Access the "Configuration" dashboard (left column below) and download the configuration files from it. Place them in root/configuration
+3. Access the "Notebooks" dashboard and download the notebooks.zip file. Unzip it and place the notebooks into root/notebooks
+4. Navigate to root/notebooks and launch jupyter notebook
+5. Open the notebook corresponding to the figure you are interested in. In the second or third cell, the notebook will try to load the relevant data. Find that location and note the datasets you will need. For example, in Figure 1.ipynb you find:
+
+```
+"""
+Paths to relevant data. 
+"""
+output_spikes_fn = cfg._cfg['inputs']['raw_spikes']
+stim_fn = cfg._cfg['inputs']['stimuli']
+tribes_fn = cfg._cfg['analyzed']['tribes']
+```
+
+This indicates you need from the dashboard "Input data" the files in the "raw_spikes" and "stimuli" dataset, and from the "Analysis results" dashboard the files in the "tribes" dataset. The "tribes" dataset refers to the selected neighborhoods of neurons in the model. The neighborhoods were unfortunately called "tribes" in an early version of the associated manuscript. While we were able to change the manuscript, the unfortunate term is too deeply embedded in the code to change without breaking things. We apologize for the confusion and any offense given.
+
+6. Download the required files and place them as explained above
+7. Run the rest of the notebook
