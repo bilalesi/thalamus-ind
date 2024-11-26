@@ -1,4 +1,4 @@
-const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021.2SparqlIndex/sparql"
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021SparqlIndex/sparql"
 const token = "Bearer xxx";
 
 const data_dashboards = {
@@ -9,7 +9,7 @@ PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?output ?outputDescription (GROUP_CONCAT(DISTINCT ?derivation; SEPARATOR=", ") AS ?input) ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), "?tag=TOPO2021") AS ?self) ?output ?outputDescription (GROUP_CONCAT(DISTINCT ?derivation; SEPARATOR=", ") AS ?input) ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
 WHERE {
 ?entity nxv:self ?self_wo_tag ;
    nxv:deprecated false ;
@@ -40,10 +40,10 @@ PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?analysisResult ?analysisResultDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) 
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), "?tag=TOPO2021") AS ?self) ?analysisResult ?analysisResultDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) 
 ?codeVersion ?license 
 WHERE  {  
-  ?entity nxv:self ?self ;
+  ?entity nxv:self ?self_wo_tag ;
    nxv:deprecated false ;
    a schema:Dataset ;
    schema:name ?analysisResult ;
@@ -71,7 +71,7 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?name (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?softwareName ?codeVersion ?codeRepository ?runtimePlatform ?license
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), "?tag=SSCX2021") AS ?self) ?name (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?softwareName ?codeVersion ?codeRepository ?runtimePlatform ?license
 WHERE {
 ?entity nxv:self ?self_wo_tag ;
    nxv:deprecated false ;
@@ -102,7 +102,7 @@ PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?input ?inputDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), "?tag=TOPO2021") AS ?self) ?input ?inputDescription ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
 WHERE {
 ?entity nxv:self ?self_wo_tag ;
    nxv:deprecated false ;
@@ -136,7 +136,7 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX vocab: <https://bbp.epfl.ch/nexus/v1/resources/public/topological-sampling/_/>
 
-SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?name ?description (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), "?tag=TOPO2021") AS ?self) ?name ?description (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
 WHERE {
 ?entity nxv:self ?self_wo_tag ;
    nxv:deprecated false ;
