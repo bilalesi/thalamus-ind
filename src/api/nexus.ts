@@ -1,9 +1,39 @@
-const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021.2SparqlIndex/sparql"
-// const url = "https://openbluebrain.com/api/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
-
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2FdefaultSparqlIndex/sparql"
 const token = "Bearer xxx";
 
 const data_dashboards = {
+    all_data: `
+    PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+PREFIX nsg: <https://neuroshapes.org/>
+PREFIX schema: <http://schema.org/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+SELECT DISTINCT ?self ?output ?outputDescription (GROUP_CONCAT(DISTINCT ?derivation; SEPARATOR=", ") AS ?input) ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
+WHERE {
+?entity nxv:self ?self ;
+   nxv:deprecated false ;
+   nxv:createdAt ?registeredAt ;
+   nxv:createdBy ?registered_by ;
+   nxv:updatedAt ?updatedAt ;
+   nxv:updatedBy ?updated_by ;
+   a schema:Dataset ;
+   schema:name ?output ;
+   schema:description ?outputDescription .
+  OPTIONAL { ?entity nsg:derivation / prov:entity / schema:name ?derivation } . 
+  OPTIONAL { ?entity nsg:contribution / prov:agent ?agent } .
+  OPTIONAL { ?agent schema:familyName ?familyName } . 
+  OPTIONAL { ?agent schema:givenName ?givenName } . 
+  OPTIONAL { ?entity nsg:brainLocation / nsg:brainRegion / rdfs:label ?modelledBrainRegion } . 
+  OPTIONAL { ?entity nsg:subject / nsg:species / rdfs:label ?modelledSpecies } . 
+  OPTIONAL { ?entity schema:license ?license } .  
+  BIND (STR(?registered_by) AS ?registered_by_str) .
+  BIND (STR(?updated_by) AS ?updated_by_str) .
+  FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
+}
+GROUP BY ?self ?entity ?output ?license ?outputDescription ?modelledBrainRegion ?modelledSpecies ?givenName ?familyName ?contributor ?registeredAt ?updatedAt ?registered_by ?registered_by_str ?registeredBy ?updated_by ?updated_by_str ?updatedBy
+LIMIT 100`,
     analysis_results: `
     PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX nsg: <https://neuroshapes.org/>
@@ -147,7 +177,7 @@ const fetch_query = async (query: string) => {
     return await response.json()
 }
 
-export const fetch_resource = async (url: string, type: "blob" | "json" = "json") => {
+export const fetch_resource = async (url: string, type: "blob" | "json" = "json"): Promise<any> => {
     const resp = await fetch(url, {
         "credentials": "include",
         "headers": {
@@ -158,9 +188,29 @@ export const fetch_resource = async (url: string, type: "blob" | "json" = "json"
         "method": "get",
         "mode": "cors"
     });
-
     if (type === "json") return await resp.json();
     else if (type === "blob") {
+        console.log('@@url', url, `-- [${resp.ok}]`);
+        if (!resp.ok) {
+            const _url = `https://bbp.epfl.ch/nexus/v1/resources/public/topological-sampling?deprecated=false&from=0&q=${url}&size=1`;
+            const _resp = await fetch(_url, {
+                "credentials": "include",
+                "headers": {
+                    "Accept": "*/*",
+                    "Content-Type": "application/json",
+                    "Authorization": token,
+                },
+                "method": "get",
+                "mode": "cors"
+            });
+            const _res = (await _resp.json())._results;
+            console.log('@@ES-results', `-- [${_res ? _res.length : "no-results"}]`);
+            if (_res && _res.length) {
+                const __url = _res[0]._self;
+                return await fetch_resource(__url, "blob");
+            }
+            return null;
+        }
         return await (await resp.arrayBuffer())
     };
 
@@ -216,6 +266,7 @@ export const createTemporaryDirectory = async (_path: string) => {
     try {
         if (!existsSync(_path)) {
             const final_path = await mkdir(_path, { recursive: true });
+            console.log(`[Directory] ${_path} created`)
             return _path;
         } else {
             console.log(`Directory '${_path}' already exists.`);
@@ -275,13 +326,12 @@ export async function processPageType(
         for (const res of results) {
             const resource = await fetch_resource(res.self);
             const resouce_name = resource.name;
-            // NOTE: need to check the resource response differernt to error context
-            // resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json'
-            if (!existsSync(`${res_path}/${resource.name}.json`) && resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json') {
-                await writeFile(`${res_path}/${resource.name}.json`, Buffer.from(JSON.stringify(resource)), {
+            if (!existsSync(`${res_path}/${resouce_name}.json`) && resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json') {
+                await writeFile(`${res_path}/${resouce_name}.json`, Buffer.from(JSON.stringify(resource)), {
                     flag: "wx",
                 });
             }
+            await createTemporaryDirectory(`${path}/${k}/${resouce_name}`);
             if ("distribution" in resource) {
                 const artifacts = [];
                 for (const dist of ensureArray(resource.distribution)) {
@@ -290,15 +340,23 @@ export async function processPageType(
                     const type = dist["encodingFormat"];
                     const size = dist["contentSize"]["value"];
                     const url = dist.contentUrl;
-                    if (!existsSync(`${path}/${name}`) && dist.contentUrl) {
-                        if (size <= 2_000_000_000) {
-                            const binary = await fetch_resource(dist.contentUrl, "blob");
-                            await writeFile(`${path}/${name}`, Buffer.from(binary), {
-                                flag: "wx",
-                            });
-                        }
-                    } else {
-                        //   console.log("@@file-exist", name);
+                    if (dist.contentUrl && size <= 2_000_000_000 && !existsSync(`${path}/${k}/${resouce_name}/${name}`)) {
+                        const binary = await fetch_resource(dist.contentUrl, "blob");
+                        await writeFile(`${path}/${k}/${resouce_name}/${name}`, Buffer.from(binary), {
+                            flag: "wx",
+                        });
+                    } else if (size > 2_000_000_000) {
+                        await writeFile(`${path}/0__required.json`, `
+                            -----------------
+                            ws: ${ws}
+                            dash: ${k}
+                            resource: ${resouce_name}
+                            resource_self: ${res.self}
+                            dist_name: ${name}
+                            distribution: ${JSON.stringify(dist, null, 2)}
+                            `, {
+                            flag: "a",
+                        });
                     }
                     artifacts.push({
                         name,
@@ -306,7 +364,7 @@ export async function processPageType(
                         type,
                         size,
                         url,
-                        path: dist.url ? dist.url : `/artifacts/${name}`,
+                        path: dist.url ? dist.url : `/artifacts/${k}/${resouce_name}/${name}`,
                         downloadable: !Boolean(dist.url)
                     });
                 }

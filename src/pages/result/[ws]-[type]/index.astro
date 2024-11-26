@@ -22,9 +22,10 @@ export async function getStaticPaths() {
     }>;
     rows: any[];
   }> = [];
-  const [analysis_results, configurations, input_data, notebooks] =
+  const [all, analysis_results, configurations, input_data, notebooks] =
     data_dashboards_result;
   const data = {
+    all,
     analysis_results,
     configurations,
     input_data,
@@ -56,11 +57,11 @@ export async function getStaticPaths() {
     }
   }
 
-  const all = pages.map(({ ws, type, columns, rows }) => ({
+  const all_pages = pages.map(({ ws, type, columns, rows }) => ({
     params: { ws, type },
     props: { rows, columns },
   }));
-  return all;
+  return all_pages;
 }
 
 const { ws, type } = Astro.params;

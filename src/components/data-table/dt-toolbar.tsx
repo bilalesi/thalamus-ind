@@ -14,7 +14,7 @@ export function DataTableToolbar<TData>({
     table,
 }: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0
-    const input = table.getColumn("name") ?? table.getColumn("input") ?? table.getColumn("analysisResult") 
+    const input = table.getColumn("name") ?? table.getColumn("output") ?? table.getColumn("input") ?? table.getColumn("analysisResult") 
     return (
         <div className="flex items-center justify-between">
             <div className="flex flex-1 items-center space-x-2">

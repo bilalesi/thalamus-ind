@@ -1,5 +1,6 @@
 
 export const data = {
+    all: "All",
     analysis_results: "Analysis Results",
     configurations: "Configurations",
     input_data: "Input Data",
@@ -14,6 +15,7 @@ export const workspacesList = {
 export type DataDashboardsListKeys = keyof typeof data;
 
 export const pagesMapping = {
+    "data-all": "Data - All",
     "data-analysis_results": "Data - Analysis Results",
     "data-configurations": "Data - Configurations",
     "data-input_data": "Data - Input Data",
