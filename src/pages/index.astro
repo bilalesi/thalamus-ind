@@ -4,7 +4,7 @@ import Layout from "@/layouts/layout.astro";
 import * as studio from "@/markdown/studio-art.md";
 import "@/styles/globals.css";
 
-const title = "Topological sampling data-2021-1";
+const title = studio.frontmatter.title;
 ---
 
 <Layout title={title}>

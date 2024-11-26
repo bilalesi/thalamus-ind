@@ -1,5 +1,5 @@
-const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021SparqlIndex/sparql"
-const token = "Bearer xxxx";
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021.2SparqlIndex/sparql"
+const token = "Bearer xxx";
 
 const data_dashboards = {
     all_data: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
