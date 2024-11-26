@@ -1,18 +1,17 @@
-const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2FdefaultSparqlIndex/sparql"
-const token = "Bearer xxx";
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/topological-sampling/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2Ftopo2021SparqlIndex/sparql"
+const token = "Bearer xxxx";
 
 const data_dashboards = {
-    all_data: `
-    PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+    all_data: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX nsg: <https://neuroshapes.org/>
 PREFIX schema: <http://schema.org/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-SELECT DISTINCT ?self ?output ?outputDescription (GROUP_CONCAT(DISTINCT ?derivation; SEPARATOR=", ") AS ?input) ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
+SELECT DISTINCT (CONCAT(STR(?self_wo_tag), '?tag=TOPO2021.2') AS ?self) ?output ?outputDescription (GROUP_CONCAT(DISTINCT ?derivation; SEPARATOR=", ") AS ?input) ?modelledBrainRegion ?modelledSpecies (CONCAT(?givenName, " ", ?familyName) AS ?contributor) ?license
 WHERE {
-?entity nxv:self ?self ;
+?entity nxv:self ?self_wo_tag ;
    nxv:deprecated false ;
    nxv:createdAt ?registeredAt ;
    nxv:createdBy ?registered_by ;
@@ -32,10 +31,9 @@ WHERE {
   BIND (STR(?updated_by) AS ?updated_by_str) .
   FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
 }
-GROUP BY ?self ?entity ?output ?license ?outputDescription ?modelledBrainRegion ?modelledSpecies ?givenName ?familyName ?contributor ?registeredAt ?updatedAt ?registered_by ?registered_by_str ?registeredBy ?updated_by ?updated_by_str ?updatedBy
+GROUP BY ?self ?entity ?output ?license ?outputDescription ?modelledBrainRegion ?modelledSpecies ?givenName ?familyName ?contributor ?registeredAt ?updatedAt ?registered_by ?registered_by_str ?registeredBy ?updated_by ?updated_by_str ?updatedBy ?self_wo_tag
 LIMIT 100`,
-    analysis_results: `
-    PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+    analysis_results: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX nsg: <https://neuroshapes.org/>
 PREFIX schema: <http://schema.org/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
@@ -65,8 +63,7 @@ WHERE  {
   FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
 }
 LIMIT 100`,
-    configurations: `
-PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+    configurations: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX schema: <http://schema.org/>
 PREFIX nsg: <https://neuroshapes.org/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
@@ -98,8 +95,7 @@ OPTIONAL { ?entity schema:license ?license } .
                  nsg:softwareSourceCode / schema:runtimePlatform ?runtimePlatform .
 }
 LIMIT 100`,
-    input_data: `
-   PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
+    input_data: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX nsg: <https://neuroshapes.org/>
 PREFIX schema: <http://schema.org/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
@@ -130,7 +126,7 @@ WHERE {
   FILTER NOT EXISTS { ?entity schema:hasPart ?part } .
 }
 GROUP BY ?self ?entity ?input ?license ?inputDescription ?modelledBrainRegion ?modelledSpecies ?givenName ?familyName ?contributor ?registeredAt ?updatedAt ?registered_by ?registered_by_str ?registeredBy ?updated_by ?updated_by_str ?updatedBy ?self_wo_tag
-LIMIT 100  `,
+LIMIT 100`,
     notebooks: `PREFIX nxv: <https://bluebrain.github.io/nexus/vocabulary/>
 PREFIX schema: <http://schema.org/>
 PREFIX nsg: <https://neuroshapes.org/>
@@ -158,7 +154,7 @@ OPTIONAL { ?agent schema:familyName ?familyName } .
 OPTIONAL { ?agent schema:givenName ?givenName } .
 OPTIONAL { ?entity schema:license ?license } .
 }
-LIMIT 100  `
+LIMIT 100`
 };
 
 const fetch_query = async (query: string) => {

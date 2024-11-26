@@ -1,5 +1,5 @@
 ---
-title: "Topological sampling data"
+title: "Topological sampling data 2021-1"
 author: "obpp"
 ---
 Here, we provide the input data and analysis results of our manuscript "Topology of synaptic connectivity constrains neuronal stimulus representation, predicting two complementary coding strategies" (https://www.biorxiv.org/content/10.1101/2020.11.02.363929v2). The inputs comprise descriptions of the neurons and connectivity of the model of Markram et al., 2015 (https://www.sciencedirect.com/science/article/pii/S0092867415011915) the identifiers of stimuli injected into the model during a simulation and the responses of excitatory neurons to the stimuli. You can find them under the "Input data" dashboard below.
@@ -99,7 +99,7 @@ The formatting of the input data files is described in the readme file of the co
 
 means that the pipeline stage "gen_topo_db" is the one we are interested in for the purpose of this example.
 
-4.    In the analysis code repository (https://github.com/BlueBrain/topological_sampling ) refer to the documentation / code for that pipeline stage.
+4. In the analysis code repository (https://github.com/BlueBrain/topological_sampling ) refer to the documentation / code for that pipeline stage.
 
 ## Use cases
 
