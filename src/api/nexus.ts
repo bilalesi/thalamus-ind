@@ -1,6 +1,4 @@
-const url = "https://bbp.epfl.ch/nexus/v1/views/public/synthetic_axonal_morphologies/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2FdefaultSparqlIndex/sparql"
-// const url = "https://openbluebrain.com/api/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql"
-
+const url = "https://bbp.epfl.ch/nexus/v1/views/public/synthetic_axonal_morphologies/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2FdefaultSparqlIndex/sparql";
 const token = "Bearer xxx";
 
 const data = {
@@ -79,14 +77,13 @@ const fetch_query = async (query: string) => {
             "Content-Type": "text/plain",
             "Authorization": token,
         },
-        "referrer": "https://bbp.epfl.ch/nexus/v1/views/public/thalamus/https%3A%2F%2Fbluebrain.github.io%2Fnexus%2Fvocabulary%2F20240305SparqlIndex/sparql",
         "body": query,
         "method": "post",
     })
     return await response.json()
 }
 
-export const fetch_resource = async (url: string, type: "blob" | "json" = "json") => {
+export const fetch_resource = async (url: string, type: "blob" | "json" = "json"): Promise<any> => {
     const resp = await fetch(url, {
         "credentials": "include",
         "headers": {
@@ -97,9 +94,29 @@ export const fetch_resource = async (url: string, type: "blob" | "json" = "json"
         "method": "get",
         "mode": "cors"
     });
-
     if (type === "json") return await resp.json();
     else if (type === "blob") {
+        console.log('@@url', url, `-- [${resp.ok}]`);
+        if (!resp.ok) {
+            const _url = `https://bbp.epfl.ch/nexus/v1/resources/public/synthetic_axonal_morphologies?deprecated=false&from=0&q=${url}&size=1`;
+            const _resp = await fetch(_url, {
+                "credentials": "include",
+                "headers": {
+                    "Accept": "*/*",
+                    "Content-Type": "application/json",
+                    "Authorization": token,
+                },
+                "method": "get",
+                "mode": "cors"
+            });
+            const _res = (await _resp.json())._results;
+            console.log('@@ES-results', `-- [${_res ? _res.length : "no-results"}]`);
+            if (_res && _res.length) {
+                const __url = _res[0]._self;
+                return await fetch_resource(__url, "blob");
+            }
+            return null;
+        }
         return await (await resp.arrayBuffer())
     };
 
@@ -214,13 +231,12 @@ export async function processPageType(
         for (const res of results) {
             const resource = await fetch_resource(res.self);
             const resouce_name = resource.name;
-            // NOTE: need to check the resource response differernt to error context
-            // resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json'
-            if (!existsSync(`${res_path}/${resource.name}.json`) && resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json') {
-                await writeFile(`${res_path}/${resource.name}.json`, Buffer.from(JSON.stringify(resource)), {
+            if (!existsSync(`${res_path}/${resouce_name}.json`) && resource['@context'] !== 'https://bluebrain.github.io/nexus/contexts/error.json') {
+                await writeFile(`${res_path}/${resouce_name}.json`, Buffer.from(JSON.stringify(resource)), {
                     flag: "wx",
                 });
             }
+            await createTemporaryDirectory(`${path}/${k}/${resouce_name}`);
             if ("distribution" in resource) {
                 const artifacts = [];
                 for (const dist of ensureArray(resource.distribution)) {
@@ -229,15 +245,23 @@ export async function processPageType(
                     const type = dist["encodingFormat"];
                     const size = dist["contentSize"]["value"];
                     const url = dist.contentUrl;
-                    if (!existsSync(`${path}/${name}`) && dist.contentUrl) {
-                        if (size <= 2_000_000_000) {
-                            const binary = await fetch_resource(dist.contentUrl, "blob");
-                            await writeFile(`${path}/${name}`, Buffer.from(binary), {
-                                flag: "wx",
-                            });
-                        }
-                    } else {
-                        //   console.log("@@file-exist", name);
+                    if (dist.contentUrl && size <= 2_000_000_000 && !existsSync(`${path}/${k}/${resouce_name}/${name}`)) {
+                        const binary = await fetch_resource(dist.contentUrl, "blob");
+                        await writeFile(`${path}/${k}/${resouce_name}/${name}`, Buffer.from(binary), {
+                            flag: "wx",
+                        });
+                    } else if (size > 2_000_000_000) {
+                        await writeFile(`${path}/0__required.json`, `
+                            -----------------
+                            ws: ${ws}
+                            dash: ${k}
+                            resource: ${resouce_name}
+                            resource_self: ${res.self}
+                            dist_name: ${name}
+                            distribution: ${JSON.stringify(dist, null, 2)}
+                            `, {
+                            flag: "a",
+                        });
                     }
                     artifacts.push({
                         name,
@@ -245,7 +269,7 @@ export async function processPageType(
                         type,
                         size,
                         url,
-                        path: dist.url ? dist.url : `/artifacts/${name}`,
+                        path: dist.url ? dist.url : `/artifacts/${k}/${resouce_name}/${name}`,
                         downloadable: !Boolean(dist.url)
                     });
                 }

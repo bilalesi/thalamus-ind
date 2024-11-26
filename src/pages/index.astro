@@ -4,7 +4,7 @@ import Prose from "@/components/Prose.astro";
 import * as studio from "@/markdown/studio-art.md";
 import Layout from "@/layouts/layout.astro";
 
-const title = "Generating neocortex connectome using synthetic axonal morphologies";
+const title = studio.frontmatter.title;
 ---
 
 <Layout title={title}>
